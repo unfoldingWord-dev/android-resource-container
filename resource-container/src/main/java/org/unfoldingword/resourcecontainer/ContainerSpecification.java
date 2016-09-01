@@ -1,4 +1,4 @@
-package org.unfoldingword.resource_container;
+package org.unfoldingword.resourcecontainer;
 
 /**
  * Details about the container specification

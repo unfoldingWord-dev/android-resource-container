@@ -1,4 +1,4 @@
-package org.unfoldingword.resource_container;
+package org.unfoldingword.resourcecontainer;
 
 /**
  * Created by joel on 8/31/16.

@@ -1,4 +1,4 @@
-package org.unfoldingword.resource_container;
+package org.unfoldingword.resourcecontainer;
 
 import android.support.annotation.Nullable;
 
