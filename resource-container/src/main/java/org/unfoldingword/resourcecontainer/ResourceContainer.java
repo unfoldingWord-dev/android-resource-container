@@ -1,14 +1,10 @@
 package org.unfoldingword.resourcecontainer;
 
-import android.content.ContentValues;
 import android.support.annotation.Nullable;
 
-import org.apache.tools.bzip2.CBZip2InputStream;
-import org.apache.tools.bzip2.CBZip2OutputStream;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.json.JSONObject;
-import org.kamranzafar.jtar.TarEntry;
 import org.kamranzafar.jtar.TarOutputStream;
-import org.kamranzafar.jtar.TarUtils;
 import org.unfoldingword.resourcecontainer.util.FileUtil;
 import org.unfoldingword.resourcecontainer.util.TarUtil;
 
@@ -17,10 +13,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.io.OutputStream;
-import java.util.zip.CRC32;
 
 /**
  * Represents an instance of a resource container.
@@ -82,8 +76,8 @@ public class ResourceContainer {
         File tempFile = new File(containerArchive, ".tmp.tar");
 
         // decompress bzip2
-        CBZip2InputStream in = new CBZip2InputStream(new FileInputStream(containerArchive));
-        OutputStream out = FileUtil.openOutputStream(tempFile);
+//        CBZip2InputStream in = new CBZip2InputStream(new FileInputStream(containerArchive));
+//        OutputStream out = FileUtil.openOutputStream(tempFile);
 
 
 
@@ -106,18 +100,22 @@ public class ResourceContainer {
         tarStream.close();
 
         // compress
-        // TODO: 9/7/16 the compression does not work
-        File archive = new File(containerDirectory.getAbsolutePath() + "." + ContainerSpecification.fileExtension + ".tar");
-        BufferedInputStream origin = new BufferedInputStream(new FileInputStream(tempFile));
-        CBZip2OutputStream bzip2Stream = new CBZip2OutputStream(new BufferedOutputStream(new FileOutputStream(archive)));
-        int count;
-        byte data[] = new byte[2048];
-        while((count = origin.read(data)) != -1) {
-            bzip2Stream.write(data, 0, count);
+        File archive = new File(containerDirectory.getAbsolutePath() + "." + ContainerSpecification.fileExtension);
+
+        FileInputStream fin = new FileInputStream(tempFile);
+        BufferedInputStream in = new BufferedInputStream(fin);
+
+        FileOutputStream out = new FileOutputStream(archive);
+        BZip2CompressorOutputStream bzOut = new BZip2CompressorOutputStream(out);
+        int n;
+        byte buffer[] = new byte[2048];
+        while((n = in.read(buffer)) != -1) {
+            bzOut.write(buffer, 0, n);
         }
-        bzip2Stream.flush();
-        origin.close();
-        bzip2Stream.close();
+        bzOut.close();
+        in.close();
+
+        tempFile.delete();
 
         return archive;
     }

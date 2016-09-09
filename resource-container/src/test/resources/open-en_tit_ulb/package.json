@@ -1,6 +1,5 @@
 {
-  "package_version": "7.0",
-  "type": "book",
+  "package_version": 7,
   "modified_at": 20160830,
   "content_mime_type": "text/usfm",
   "language": {
@@ -18,10 +17,12 @@
     "category_id": 6
   },
   "resource": {
-    "slug": "udb",
-    "name": "Unlocked Dynamic Bible",
+    "slug": "ulb",
+    "name": "Unlocked Literal Bible",
+    "type": "book",
+    "translation_words_assignments_url": "https://api.unfoldingword.org/ts/txt/2/tit/en/tw_cat.json?date_modified=20160504",
     "status": {
-      "translate_mode": "gl",
+      "translate_mode": "all",
       "checking_level": "3",
       "comments": "",
       "pub_date": 20160830,
