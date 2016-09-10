@@ -1,11 +1,14 @@
 package org.unfoldingword.resourcecontainer.util;
 
 import org.kamranzafar.jtar.TarEntry;
+import org.kamranzafar.jtar.TarInputStream;
 import org.kamranzafar.jtar.TarOutputStream;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -14,13 +17,50 @@ import java.io.IOException;
 public class TarUtil {
 
     /**
+     * Extracts a tar to a directory
+     * @param in
+     * @param destFolder
+     * @throws IOException
+     */
+    public static void untar(TarInputStream in, String destFolder) throws IOException {
+        BufferedOutputStream dest = null;
+
+        TarEntry entry;
+        while ((entry = in.getNextEntry()) != null) {
+            System.out.println("Extracting: " + entry.getName());
+            int count;
+            byte data[] = new byte[2048];
+
+            if (entry.isDirectory()) {
+                new File(destFolder + "/" + entry.getName()).mkdirs();
+                continue;
+            } else {
+                int di = entry.getName().lastIndexOf('/');
+                if (di != -1) {
+                    new File(destFolder + "/" + entry.getName().substring(0, di)).mkdirs();
+                }
+            }
+
+            FileOutputStream fos = new FileOutputStream(destFolder + "/" + entry.getName());
+            dest = new BufferedOutputStream(fos);
+
+            while ((count = in.read(data)) != -1) {
+                dest.write(data, 0, count);
+            }
+
+            dest.flush();
+            dest.close();
+        }
+    }
+
+    /**
      * Places a directory in a tar
      * @param parent the directory where the path will be saved. leave null if you want to exclude the parent directory
      * @param path the path that will be added
      * @param out
      * @throws IOException
      */
-    public static void tarFolder(String parent, String path, TarOutputStream out) throws IOException {
+    public static void tar(String parent, String path, TarOutputStream out) throws IOException {
         BufferedInputStream origin = null;
         File f = new File(path);
         String files[] = f.list();
@@ -49,7 +89,7 @@ public class TarUtil {
             if (fe.isDirectory()) {
                 String[] fl = fe.list();
                 if (fl != null && fl.length != 0) {
-                    tarFolder(parent, fe.getPath(), out);
+                    tar(parent, fe.getPath(), out);
                 } else {
                     TarEntry entry = new TarEntry(fe, parent + files[i] + "/");
                     out.putNextEntry(entry);

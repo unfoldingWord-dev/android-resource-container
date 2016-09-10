@@ -16,11 +16,19 @@ public class ExampleUnitTest {
         assertEquals(4, 2 + 2);
     }
     @Test
-    public void closeResourceContainer_succeeds() throws Exception {
+    public void closeResourceContainer() throws Exception {
         ClassLoader classLoader = this.getClass().getClassLoader();
         URL resource = classLoader.getResource("open-en_tit_ulb");
         File archive = ResourceContainer.close(new File(resource.getPath()));
         assertTrue(archive.exists());
     }
-
+    @Test
+    public void openResourceContainer() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("closed-en_tit_ulb.ts");
+        File archivePath = new File(resource.getPath());
+        File dir = new File(archivePath.getParentFile(), "closed-en_tit_ulb");
+        ResourceContainer container = ResourceContainer.open(archivePath, dir);
+        assertTrue(dir.exists());
+    }
 }
