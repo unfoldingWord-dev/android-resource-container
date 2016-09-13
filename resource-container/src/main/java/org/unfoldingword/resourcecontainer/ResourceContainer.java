@@ -2,8 +2,12 @@ package org.unfoldingword.resourcecontainer;
 
 import android.support.annotation.Nullable;
 
+import com.esotericsoftware.yamlbeans.YamlException;
+import com.esotericsoftware.yamlbeans.YamlReader;
+
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.kamranzafar.jtar.TarInputStream;
 import org.kamranzafar.jtar.TarOutputStream;
@@ -14,20 +18,91 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents an instance of a resource container.
  */
 public class ResourceContainer {
+    private static final String CONTENT_DIR = "content";
+
+    /**
+     * Returns the path to the resource container directory
+     */
+    public final File path;
+
+    /**
+     * Returns the resource container package information.
+     * This is the package.json file
+     */
+    public final JSONObject info;
+
+    /**
+     * Returns the resource container data configuration.
+     * This is the config.yml file under the content/ directory
+     */
+    public final Map config;
+
+    /**
+     * Returns the table of contents.
+     * This is the toc.yml file under the content/ directory.
+     * This can be a list or a map.
+     */
+    public final Object toc;
+
+    /**
+     * Returns the slug of the resource container
+     */
+    public final String slug;
 
     /**
      * Instantiates a new resource container object
      * @param containerDirectory the directory of the resource container
      * @param containerInfo the resource container info (package.json)
      */
-    private ResourceContainer(File containerDirectory, JSONObject containerInfo) {
-        // TODO: 8/31/16 initialize the resource container
+    private ResourceContainer(File containerDirectory, JSONObject containerInfo) throws JSONException {
+        this.path = containerDirectory;
+        this.info = containerInfo;
+        this.slug = ContainerTools.makeSlug(
+                containerInfo.getJSONObject("language").getString("slug"),
+                containerInfo.getJSONObject("project").getString("slug"),
+                containerInfo.getJSONObject("resource").getString("slug")
+                );
+
+        // load config
+        File configFile = new File(containerDirectory, CONTENT_DIR + "/config.yml");
+        Map tempConfig = null;
+        try {
+            YamlReader reader = new YamlReader(new FileReader(configFile));
+            Object object = reader.read();
+            tempConfig = (Map)object;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (YamlException e) {
+            e.printStackTrace();
+        } finally {
+            if(tempConfig == null) tempConfig = new HashMap();
+        }
+        this.config = tempConfig;
+
+        // load toc
+        File tocFile = new File(containerDirectory, CONTENT_DIR + "/toc.yml");
+        Object tempToc = null;
+        try {
+            YamlReader reader = new YamlReader(new FileReader(tocFile));
+            tempToc = reader.read();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (YamlException e) {
+            e.printStackTrace();
+        } finally {
+            if(tempToc == null) tempToc = new HashMap();
+        }
+        this.toc = tempToc;
     }
 
     /**
@@ -55,12 +130,14 @@ public class ResourceContainer {
      * Creates a new resource container.
      * Rejects with an error if the container exists.
      * @param containerDirectory
+     * @param opts
      * @return
      */
     @Nullable
-    public static ResourceContainer make(File containerDirectory) {
-        // TODO: 8/31/16  make it!
-        return null;
+    public static ResourceContainer make(File containerDirectory, JSONObject opts) throws Exception {
+        if(containerDirectory.exists()) throw new Exception("Resource container directory already exists");
+        // TODO: finish this
+        throw new Exception("Not implemented yet!");
     }
 
 
@@ -73,6 +150,7 @@ public class ResourceContainer {
      */
     @Nullable
     public static ResourceContainer open(File containerArchive, File containerDirectory) throws Exception{
+        if(!containerArchive.exists()) throw new Exception("Missing resource container");
         File tempFile = new File(containerArchive + ".tmp.tar");
         FileOutputStream out = null;
         BZip2CompressorInputStream bzIn = null;
@@ -122,6 +200,7 @@ public class ResourceContainer {
      */
     @Nullable
     public static File close(File containerDirectory) throws Exception {
+        if(!containerDirectory.exists()) throw new Exception("Missing resource container");
         // pack
         File tempFile = new File(containerDirectory.getAbsolutePath() + ".tmp.tar");
         TarOutputStream tout = new TarOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)));
@@ -161,20 +240,5 @@ public class ResourceContainer {
         }
 
         return archive;
-    }
-
-    /**
-     * Specifies the valid resource container types
-     */
-    public enum Type {
-        BOOK("book"),
-        HELP("help"),
-        DICTIONARY("dict"),
-        MANUAL("man");
-
-        final String name;
-        Type(String name) {
-            this.name = name;
-        }
     }
 }
