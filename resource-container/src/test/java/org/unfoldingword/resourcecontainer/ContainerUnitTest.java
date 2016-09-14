@@ -17,6 +17,18 @@ import static org.junit.Assert.*;
 public class ContainerUnitTest {
 
     @Test
+    public void loadContainer() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("open-en_tit_ulb");
+        File containerDir = new File(resource.getPath());
+
+        ResourceContainer container = ResourceContainer.load(containerDir);
+        assertNotNull(container);
+        assertEquals(container.info.getInt("package_version"), ContainerSpecification.version);
+        assertNotNull(container.toc);
+        assertNotNull(container.config);
+    }
+    @Test
     public void closeResourceContainer() throws Exception {
         ClassLoader classLoader = this.getClass().getClassLoader();
         URL resource = classLoader.getResource("open-en_tit_ulb");
@@ -33,6 +45,8 @@ public class ContainerUnitTest {
         ResourceContainer container = ResourceContainer.open(archivePath, dir);
         assertNotNull(container);
         assertTrue(dir.exists());
+        assertNotNull(container.toc);
+        assertNotNull(container.config);
         assertEquals(container.info.getInt("package_version"), ContainerSpecification.version);
     }
     @Test
