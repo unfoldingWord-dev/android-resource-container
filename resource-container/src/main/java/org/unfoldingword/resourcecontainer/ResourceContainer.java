@@ -63,6 +63,7 @@ public class ResourceContainer {
      * Instantiates a new resource container object
      * @param containerDirectory the directory of the resource container
      * @param containerInfo the resource container info (package.json)
+     * @throws JSONException
      */
     private ResourceContainer(File containerDirectory, JSONObject containerInfo) throws JSONException {
         this.path = containerDirectory;
@@ -130,6 +131,7 @@ public class ResourceContainer {
      * Rejects with an error if the container exists.
      * @param containerDirectory
      * @param opts
+     * @throws Exception
      * @return
      */
     public static ResourceContainer make(File containerDirectory, JSONObject opts) throws Exception {
@@ -144,6 +146,7 @@ public class ResourceContainer {
      * If the container is already opened it will be loaded
      * @param containerArchive
      * @param containerDirectory
+     * @throws Exception
      * @return
      */
     public static ResourceContainer open(File containerArchive, File containerDirectory) throws Exception{
