@@ -3,12 +3,10 @@ package org.unfoldingword.resourcecontainer;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.robolectric.RobolectricTestRunner;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -16,7 +14,7 @@ import static org.junit.Assert.*;
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
  */
 @RunWith(RobolectricTestRunner.class)
-public class ExampleUnitTest {
+public class ContainerUnitTest {
 
     @Test
     public void closeResourceContainer() throws Exception {

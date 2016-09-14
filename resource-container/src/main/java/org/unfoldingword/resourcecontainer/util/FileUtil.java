@@ -24,7 +24,7 @@ public class FileUtil {
      * Converts an input stream into a string
      * @param is
      * @return
-     * @throws Exception
+     * @throws IOException
      */
     public static String readStreamToString(InputStream is) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -40,7 +40,7 @@ public class FileUtil {
      * Returns the contents of a file as a string
      * @param file
      * @return
-     * @throws Exception
+     * @throws IOException
      */
     public static String readFileToString(File file) throws IOException {
         FileInputStream fis = null;
