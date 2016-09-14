@@ -37,4 +37,24 @@ public class ExampleUnitTest {
         assertTrue(dir.exists());
         assertEquals(container.info.getInt("package_version"), ContainerSpecification.version);
     }
+    @Test
+    public void inspectClosedContainer() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("closed-en_tit_ulb.ts");
+        File archivePath = new File(resource.getPath());
+
+        JSONObject json = ContainerTools.inspect(archivePath);
+        assertNotNull(json);
+        assertEquals(json.getInt("package_version"), ContainerSpecification.version);
+    }
+    @Test
+    public void inspectOpenedContainer() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("open-en_tit_ulb");
+        File containerDir = new File(resource.getPath());
+
+        JSONObject json = ContainerTools.inspect(containerDir);
+        assertNotNull(json);
+        assertEquals(json.getInt("package_version"), ContainerSpecification.version);
+    }
 }
