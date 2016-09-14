@@ -1,7 +1,5 @@
 package org.unfoldingword.resourcecontainer;
 
-import android.support.annotation.Nullable;
-
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 
@@ -112,7 +110,6 @@ public class ResourceContainer {
      * @throws Exception
      * @return
      */
-    @Nullable
     public static ResourceContainer load(File containerDirectory) throws Exception {
         if(!containerDirectory.exists()) throw new Exception("The resource container does not exist");
         if(!containerDirectory.isDirectory()) throw new Exception("Not an open resource container");
@@ -133,7 +130,6 @@ public class ResourceContainer {
      * @param opts
      * @return
      */
-    @Nullable
     public static ResourceContainer make(File containerDirectory, JSONObject opts) throws Exception {
         if(containerDirectory.exists()) throw new Exception("Resource container directory already exists");
         // TODO: finish this
@@ -148,7 +144,6 @@ public class ResourceContainer {
      * @param containerDirectory
      * @return
      */
-    @Nullable
     public static ResourceContainer open(File containerArchive, File containerDirectory) throws Exception{
         if(!containerArchive.exists()) throw new Exception("Missing resource container");
         File tempFile = new File(containerArchive + ".tmp.tar");
@@ -198,7 +193,6 @@ public class ResourceContainer {
      * @return the path to the resource container archive
      * @throws Exception
      */
-    @Nullable
     public static File close(File containerDirectory) throws Exception {
         if(!containerDirectory.exists()) throw new Exception("Missing resource container");
         // pack
