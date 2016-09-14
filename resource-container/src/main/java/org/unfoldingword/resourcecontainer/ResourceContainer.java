@@ -1,5 +1,7 @@
 package org.unfoldingword.resourcecontainer;
 
+import android.annotation.SuppressLint;
+
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 
