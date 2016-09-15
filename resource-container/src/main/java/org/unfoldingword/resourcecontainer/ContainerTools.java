@@ -346,7 +346,7 @@ public class ContainerTools {
     /**
      * Retrieves the resource container type by parsing the resource container mime type.
      * @param mimeType
-     * @return The mime type. e.g. "application/ts+type"
+     * @return The mime type. e.g. "application/tsrc+type"
      */
     public static String mimeToType(String mimeType) {
         return mimeType.split("\\+")[1];
@@ -355,9 +355,9 @@ public class ContainerTools {
     /**
      * Returns a resource container mime type based on the given container type.
      * @param resourceType the resource container type. e.g. "book", "help" etc.
-     * @return The mime type. e.g. "application/ts+type"
+     * @return The mime type. e.g. "application/tsrc+type"
      */
     public static String typeToMime(String resourceType) {
-        return "application/ts+" + resourceType;
+        return ContainerSpecification.baseMimeType + "+" + resourceType;
     }
 }
