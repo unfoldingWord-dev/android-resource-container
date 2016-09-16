@@ -40,7 +40,7 @@ public class ContainerTools {
         if(containerPath.isFile()) {
             String[] nameArray = containerPath.getName().split("\\.");
             String ext = nameArray[nameArray.length - 1];
-            if(!ext.equals(ContainerSpecification.fileExtension)) throw new Exception("Invalid resource container file extension");
+            if(!ext.equals(ResourceContainer.fileExtension)) throw new Exception("Invalid resource container file extension");
             nameArray[nameArray.length - 1] = "";
             File containerDir = new File(containerPath.getParentFile(), containerPath.getName() + ".inspect.tmp");
             container = ResourceContainer.open(containerPath, containerDir);
@@ -78,7 +78,7 @@ public class ContainerTools {
         }
         String chunkExt = mimeType.equals("text/usfm") ? "usfm" : "md";
 
-        File containerArchive = new File(directory.getParentFile(), directory.getName() + "." + ContainerSpecification.fileExtension);
+        File containerArchive = new File(directory.getParentFile(), directory.getName() + "." + ResourceContainer.fileExtension);
         if(containerArchive.exists()) throw new Exception("Resource container already exists");
 
         try {
@@ -88,7 +88,7 @@ public class ContainerTools {
 
             // package.json
             JSONObject packageData = new JSONObject();
-            packageData.put("package_version", ContainerSpecification.version);
+            packageData.put("package_version", ResourceContainer.version);
             packageData.put("modified_at", resource.get("modified_at"));
             packageData.put("content_mime_type", mimeType);
             packageData.put("language", language);
@@ -358,6 +358,6 @@ public class ContainerTools {
      * @return The mime type. e.g. "application/tsrc+type"
      */
     public static String typeToMime(String resourceType) {
-        return ContainerSpecification.baseMimeType + "+" + resourceType;
+        return ResourceContainer.baseMimeType + "+" + resourceType;
     }
 }

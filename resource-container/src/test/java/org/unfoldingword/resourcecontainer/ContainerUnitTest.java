@@ -24,7 +24,7 @@ public class ContainerUnitTest {
 
         ResourceContainer container = ResourceContainer.load(containerDir);
         assertNotNull(container);
-        assertEquals(container.info.getInt("package_version"), ContainerSpecification.version);
+        assertEquals(container.info.getInt("package_version"), ResourceContainer.version);
         assertNotNull(container.toc);
         assertNotNull(container.config);
     }
@@ -47,7 +47,7 @@ public class ContainerUnitTest {
         assertTrue(dir.exists());
         assertNotNull(container.toc);
         assertNotNull(container.config);
-        assertEquals(container.info.getInt("package_version"), ContainerSpecification.version);
+        assertEquals(container.info.getInt("package_version"), ResourceContainer.version);
     }
     @Test
     public void inspectClosedContainer() throws Exception {
@@ -57,7 +57,7 @@ public class ContainerUnitTest {
 
         JSONObject json = ContainerTools.inspect(archivePath);
         assertNotNull(json);
-        assertEquals(json.getInt("package_version"), ContainerSpecification.version);
+        assertEquals(json.getInt("package_version"), ResourceContainer.version);
     }
     @Test
     public void inspectOpenedContainer() throws Exception {
@@ -67,6 +67,6 @@ public class ContainerUnitTest {
 
         JSONObject json = ContainerTools.inspect(containerDir);
         assertNotNull(json);
-        assertEquals(json.getInt("package_version"), ContainerSpecification.version);
+        assertEquals(json.getInt("package_version"), ResourceContainer.version);
     }
 }

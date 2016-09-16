@@ -28,6 +28,10 @@ import java.util.Map;
  * Represents an instance of a resource container.
  */
 public class ResourceContainer {
+    public static final int version = 7;
+    public static final String fileExtension = "tsrc";
+    public static final String baseMimeType = "application/tsrc";
+
     private static final String CONTENT_DIR = "content";
 
     /**
@@ -120,8 +124,8 @@ public class ResourceContainer {
         if(!packageFile.exists()) throw new Exception("Not a resource container");
         JSONObject packageJson = new JSONObject(FileUtil.readFileToString(packageFile));
         if(!packageJson.has("package_version")) throw new Exception("Not a resource container");
-        if(packageJson.getInt("package_version") > ContainerSpecification.version) throw new Exception("Unsupported container version");
-        if(packageJson.getInt("package_version") < ContainerSpecification.version) throw new Exception("Outdated container version");
+        if(packageJson.getInt("package_version") > ResourceContainer.version) throw new Exception("Unsupported container version");
+        if(packageJson.getInt("package_version") < ResourceContainer.version) throw new Exception("Outdated container version");
 
         return new ResourceContainer(containerDirectory, packageJson);
     }
@@ -213,7 +217,7 @@ public class ResourceContainer {
         }
 
         // compress
-        File archive = new File(containerDirectory.getAbsolutePath() + "." + ContainerSpecification.fileExtension);
+        File archive = new File(containerDirectory.getAbsolutePath() + "." + ResourceContainer.fileExtension);
         BZip2CompressorOutputStream bzOut = null;
         BufferedInputStream in = null;
 
