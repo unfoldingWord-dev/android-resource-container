@@ -11,8 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.kamranzafar.jtar.TarInputStream;
 import org.kamranzafar.jtar.TarOutputStream;
-import org.unfoldingword.resourcecontainer.util.FileUtil;
-import org.unfoldingword.resourcecontainer.util.TarUtil;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

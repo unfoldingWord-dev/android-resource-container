@@ -38,7 +38,7 @@ public class ContainerUnitTest {
     @Test
     public void openResourceContainer() throws Exception {
         ClassLoader classLoader = this.getClass().getClassLoader();
-        URL resource = classLoader.getResource("closed-en_tit_ulb.ts");
+        URL resource = classLoader.getResource("closed-en_tit_ulb.tsrc");
         File archivePath = new File(resource.getPath());
         File dir = new File(archivePath.getParentFile(), "closed-en_tit_ulb");
 
@@ -52,7 +52,7 @@ public class ContainerUnitTest {
     @Test
     public void inspectClosedContainer() throws Exception {
         ClassLoader classLoader = this.getClass().getClassLoader();
-        URL resource = classLoader.getResource("closed-en_tit_ulb.ts");
+        URL resource = classLoader.getResource("closed-en_tit_ulb.tsrc");
         File archivePath = new File(resource.getPath());
 
         JSONObject json = ContainerTools.inspect(archivePath);

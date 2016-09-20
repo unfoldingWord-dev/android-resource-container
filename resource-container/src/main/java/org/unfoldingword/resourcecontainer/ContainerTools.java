@@ -1,17 +1,12 @@
 package org.unfoldingword.resourcecontainer;
 
-import android.text.TextUtils;
-
-import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlWriter;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.unfoldingword.resourcecontainer.util.FileUtil;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;

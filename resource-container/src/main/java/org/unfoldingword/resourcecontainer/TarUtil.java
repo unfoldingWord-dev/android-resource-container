@@ -1,4 +1,4 @@
-package org.unfoldingword.resourcecontainer.util;
+package org.unfoldingword.resourcecontainer;
 
 import org.kamranzafar.jtar.TarEntry;
 import org.kamranzafar.jtar.TarInputStream;
@@ -14,7 +14,7 @@ import java.io.IOException;
 /**
  * Created by joel on 9/7/16.
  */
-public class TarUtil {
+class TarUtil {
 
     /**
      * Extracts a tar to a directory
