@@ -281,7 +281,6 @@ public class ContainerTools {
             try {
                 configWriter = new YamlWriter(new FileWriter(new File(contentDir, "config.yml")));
                 configWriter.write(config);
-                configWriter.close();
             } catch(Exception e) {
                 throw e;
             } finally {
@@ -293,7 +292,6 @@ public class ContainerTools {
             try {
                 tocWriter = new YamlWriter(new FileWriter(new File(contentDir, "toc.yml")));
                 tocWriter.write(toc);
-                tocWriter.close();
             } catch(Exception e) {
                 throw e;
             } finally {
