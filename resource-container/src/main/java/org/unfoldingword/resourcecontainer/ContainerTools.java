@@ -84,13 +84,14 @@ public class ContainerTools {
             // package.json
             JSONObject packageData = new JSONObject();
             packageData.put("package_version", ResourceContainer.version);
-            packageData.put("modified_at", resource.get("modified_at"));
+            packageData.put("modified_at", props.get("modified_at"));
             packageData.put("content_mime_type", mimeType);
             packageData.put("language", language);
             packageData.put("project", project);
             packageData.put("resource", resource);
             packageData.put("chunk_status", new JSONArray());
-            FileUtil.writeStringToFile(new File(directory, "package.json"), packageData.toString(2));
+            // TRICKY: JSONObject.toString escapes slashes / so we must un-escape them
+            FileUtil.writeStringToFile(new File(directory, "package.json"), packageData.toString(2).replace("\\", ""));
 
             // license
             // TODO: use a proper license based on the resource license

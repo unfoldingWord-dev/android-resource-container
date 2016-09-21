@@ -96,7 +96,6 @@ public class ContainerUnitTest {
         resource.put("name", "Unlocked Literal Bible");
         resource.put("type", "book");
         resource.put("status", new JSONObject());
-        resource.put("modified_at", 0);
         resource.getJSONObject("status").put("translate_mode", "all");
         resource.getJSONObject("status").put("checking_level", "3");
         resource.getJSONObject("status").put("license", "");
@@ -105,6 +104,7 @@ public class ContainerUnitTest {
         json.put("project", project);
         json.put("language", language);
         json.put("resource", resource);
+        json.put("modified_at", 0);
         ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_gen_ulb"), json);
         assertNotNull(container);
     }
