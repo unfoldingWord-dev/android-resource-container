@@ -299,9 +299,8 @@ public class ContainerTools {
             }
 
         } catch (Exception e) {
-            throw e;
-        } finally {
             FileUtil.deleteQuietly(directory);
+            throw e;
         }
 
         return ResourceContainer.load(directory);

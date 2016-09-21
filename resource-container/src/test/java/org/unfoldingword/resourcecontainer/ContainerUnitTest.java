@@ -1,7 +1,9 @@
 package org.unfoldingword.resourcecontainer;
 
 import org.json.JSONObject;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
@@ -15,6 +17,8 @@ import static org.junit.Assert.*;
  */
 @RunWith(RobolectricTestRunner.class)
 public class ContainerUnitTest {
+    @Rule
+    public TemporaryFolder resourceDir = new TemporaryFolder();
 
     @Test
     public void loadContainer() throws Exception {
@@ -68,5 +72,40 @@ public class ContainerUnitTest {
         JSONObject json = ContainerTools.inspect(containerDir);
         assertNotNull(json);
         assertEquals(json.getInt("package_version"), ResourceContainer.version);
+    }
+
+    @Test
+    public void convertResource() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL url = classLoader.getResource("raw_source.json");
+        File sourceFile = new File(url.getPath());
+        String data = FileUtil.readFileToString(sourceFile);
+
+        JSONObject project = new JSONObject();
+        project.put("slug", "gen");
+        project.put("name", "Genesis");
+        project.put("desc", "");
+        project.put("icon", "");
+        project.put("sort", 0);
+        JSONObject language = new JSONObject();
+        language.put("slug", "en");
+        language.put("name", "English");
+        language.put("dir", "ltr");
+        JSONObject resource = new JSONObject();
+        resource.put("slug", "ulb");
+        resource.put("name", "Unlocked Literal Bible");
+        resource.put("type", "book");
+        resource.put("status", new JSONObject());
+        resource.put("modified_at", 0);
+        resource.getJSONObject("status").put("translate_mode", "all");
+        resource.getJSONObject("status").put("checking_level", "3");
+        resource.getJSONObject("status").put("license", "");
+
+        JSONObject json = new JSONObject();
+        json.put("project", project);
+        json.put("language", language);
+        json.put("resource", resource);
+        ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_gen_ulb"), json);
+        assertNotNull(container);
     }
 }
