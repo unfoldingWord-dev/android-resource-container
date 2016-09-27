@@ -110,6 +110,41 @@ public class ContainerUnitTest {
     }
 
     @Test
+    public void convertTAResource() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL url = classLoader.getResource("raw_ta.json");
+        File sourceFile = new File(url.getPath());
+        String data = FileUtil.readFileToString(sourceFile);
+
+        JSONObject project = new JSONObject();
+        project.put("slug", "ta-translate");
+        project.put("name", "Translate Manual");
+        project.put("desc", "");
+        project.put("icon", "");
+        project.put("sort", 0);
+        JSONObject language = new JSONObject();
+        language.put("slug", "en");
+        language.put("name", "English");
+        language.put("dir", "ltr");
+        JSONObject resource = new JSONObject();
+        resource.put("slug", "vol1");
+        resource.put("name", "Volume 1");
+        resource.put("type", "man");
+        resource.put("status", new JSONObject());
+        resource.getJSONObject("status").put("translate_mode", "gl");
+        resource.getJSONObject("status").put("checking_level", "3");
+        resource.getJSONObject("status").put("license", "");
+
+        JSONObject json = new JSONObject();
+        json.put("project", project);
+        json.put("language", language);
+        json.put("resource", resource);
+        json.put("modified_at", 0);
+        ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_ta-translate_vol1"), json);
+        assertNotNull(container);
+    }
+
+    @Test
     public void semverComparison() throws Exception {
         final int EQUAL = 0;
         final int GREATER_THAN = 1;

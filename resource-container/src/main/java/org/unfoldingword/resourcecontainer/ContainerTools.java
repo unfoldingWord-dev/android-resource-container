@@ -273,6 +273,45 @@ public class ContainerTools {
                         config.put(word.getString("id"), wordConfig);
                     }
                 }
+            } else if(resource.getString("type").equals("man")) {
+                JSONObject json = new JSONObject(data);
+                for(int a = 0; a < json.getJSONArray("articles").length(); a ++) {
+                    JSONObject article = json.getJSONArray("articles").getJSONObject(a);
+                    Map articleConfig = new HashMap();
+                    List recommended = new ArrayList();
+                    List dependencies = new ArrayList();
+
+                    // TRICKY: fix the id's
+                    String slug = article.getString("id").replaceAll("\\_", "-");
+                    if(article.has("recommend") && !article.isNull("recommend")) {
+                        for(int i = 0; i < article.getJSONArray("recommend").length(); i ++) {
+                            recommended.add(article.getJSONArray("recommend").getString(i).replaceAll("\\_", "-"));
+                        }
+                    }
+                    if(article.has("depend") && !article.isNull("depend")) {
+                        for(int i = 0; i < article.getJSONArray("depend").length(); i ++) {
+                            dependencies.add(article.getJSONArray("depend").getString(i).replaceAll("\\_", "-"));
+                        }
+                    }
+                    File articleDir = new File(contentDir, slug);
+                    articleDir.mkdirs();
+
+                    // article title
+                    FileUtil.writeStringToFile(new File(articleDir, "title." + chunkExt), article.getString("title"));
+
+                    // article sub-title
+                    FileUtil.writeStringToFile(new File(articleDir, "sub-title." + chunkExt), article.getString("question"));
+
+                    // article body
+                    FileUtil.writeStringToFile(new File(articleDir, "01." + chunkExt), article.getString("text"));
+
+                    // only non-empty config
+                    if(recommended.size() > 0 || dependencies.size() > 0) {
+                        articleConfig.put("recommended", recommended);
+                        articleConfig.put("dependencies", dependencies);
+                        config.put(slug, articleConfig);
+                    }
+                }
             } else {
                 throw new Exception("Unsupported resource container type " + resource.getString("type"));
             }
