@@ -56,6 +56,7 @@ class Semver {
 
         int max = Math.max(ver1.size(), ver2.size());
         for(int i = 0; i < max; i ++) {
+            if(ver1.isWild(i) || ver2.isWild(i)) continue;
             if(ver1.get(i) > ver2.get(i)) return 1;
             if(ver1.get(i) < ver2.get(i)) return -1;
         }
@@ -77,32 +78,42 @@ class Semver {
         }
 
         /**
-         * Returns the integer value of the version at the given semver index
+         * Returns the value at the given semver index
          * @param index
          * @return
          */
         public int get(int index) {
-            if(index > 0 && index < slices.length) {
-                return coerceInt(slices[index]);
+            if(index >= 0 && index < slices.length) {
+                String value = clean(slices[index]);
+                return Integer.parseInt(value);
             } else {
                 return 0;
             }
         }
 
         /**
-         * Returns the integer value of a string
+         * Checks if the value at the index is an asterik (wild card)
+         * @param index
+         * @return
+         */
+        public boolean isWild(int index) {
+            if(index >= 0 && index < slices.length) {
+                return clean(slices[index]).equals("*");
+            }
+            return false;
+        }
+
+        /**
+         * Removes all non-numeric characters except for an asterisk.
          * @param val
          * @return
          */
-        private int coerceInt(String val) {
-            if(val == null) return 0;
-            String cleaned = val.replace("[^\\d]+", "").trim();
-            if(cleaned.isEmpty()) return 0;
-            try {
-                return Integer.parseInt(cleaned);
-            } catch(NumberFormatException e) {
-                e.printStackTrace();
-                return 0;
+        private String clean(String val) {
+            String cleaned = val.replaceAll("[^\\d\\*]", "").trim();
+            if(cleaned.isEmpty()) {
+                return "0";
+            } else {
+                return cleaned;
             }
         }
     }

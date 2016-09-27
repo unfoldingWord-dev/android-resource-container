@@ -108,4 +108,36 @@ public class ContainerUnitTest {
         ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_gen_ulb"), json);
         assertNotNull(container);
     }
+
+    @Test
+    public void semverComparison() throws Exception {
+        final int EQUAL = 0;
+        final int GREATER_THAN = 1;
+        final int LESS_THAN = -1;
+
+        assertEquals(EQUAL, Semver.compare("10.0.1", "10.0.1"));
+        assertEquals(EQUAL, Semver.compare("10.0", "10.0.0"));
+        assertEquals(EQUAL, Semver.compare("10.*", "10.0.0"));
+        assertEquals(EQUAL, Semver.compare("10.*", "10.9.0"));
+        assertEquals(EQUAL, Semver.compare("10.0.0", "10.0-alpha.0"));
+        assertEquals(EQUAL, Semver.compare("10.0.0", "v10.0.0"));
+        assertEquals(EQUAL, Semver.compare("10.*.1", "10.9.1"));
+        assertEquals(EQUAL, Semver.compare("0.8.1", "0.8.1"));
+
+        assertEquals(GREATER_THAN, Semver.compare("10.0.0", "1.0.0"));
+        assertEquals(GREATER_THAN, Semver.compare("10.1.0", "10.0.0"));
+        assertEquals(GREATER_THAN, Semver.compare("10", "9.9.0"));
+        assertEquals(GREATER_THAN, Semver.compare("10.1-alpha.0", "10.0.0"));
+        assertEquals(GREATER_THAN, Semver.compare("10.9.6", "10.*.1"));
+        assertEquals(GREATER_THAN, Semver.compare("0.9.6", "0.9.1"));
+        assertEquals(GREATER_THAN, Semver.compare("0.10.0", "0.9.*"));
+
+        assertEquals(LESS_THAN, Semver.compare("1.0.0", "10.0.0"));
+        assertEquals(LESS_THAN, Semver.compare("10.0.0", "10.1.0"));
+        assertEquals(LESS_THAN, Semver.compare("9.9.0", "10"));
+        assertEquals(LESS_THAN, Semver.compare("10.0.0", "10.1-alpha.0"));
+        assertEquals(LESS_THAN, Semver.compare("10.*.1", "10.9.6"));
+        assertEquals(LESS_THAN, Semver.compare("0.9.1", "0.9.6"));
+        assertEquals(LESS_THAN, Semver.compare("0.9.*", "0.10.0"));
+    }
 }
