@@ -26,7 +26,7 @@ import java.util.Map;
  * Represents an instance of a resource container.
  */
 public class ResourceContainer {
-    public static final int version = 7;
+    public static final String version = "0.1";
     public static final String fileExtension = "tsrc";
     public static final String baseMimeType = "application/tsrc";
 
@@ -122,8 +122,8 @@ public class ResourceContainer {
         if(!packageFile.exists()) throw new Exception("Not a resource container");
         JSONObject packageJson = new JSONObject(FileUtil.readFileToString(packageFile));
         if(!packageJson.has("package_version")) throw new Exception("Not a resource container");
-        if(packageJson.getInt("package_version") > ResourceContainer.version) throw new Exception("Unsupported container version");
-        if(packageJson.getInt("package_version") < ResourceContainer.version) throw new Exception("Outdated container version");
+        if(Semver.gt(packageJson.getString("package_version"), ResourceContainer.version)) throw new Exception("Unsupported container version");
+        if(Semver.lt(packageJson.getString("package_version"), ResourceContainer.version)) throw new Exception("Outdated container version");
 
         return new ResourceContainer(containerDirectory, packageJson);
     }
