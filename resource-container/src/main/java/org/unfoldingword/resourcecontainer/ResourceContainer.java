@@ -1,7 +1,5 @@
 package org.unfoldingword.resourcecontainer;
 
-import android.annotation.SuppressLint;
-
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 
@@ -19,7 +17,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -241,5 +243,72 @@ public class ResourceContainer {
         }
 
         return archive;
+    }
+
+    /**
+     * Returns an un-ordered list of chapter slugs in this resource container
+     * @return
+     */
+    public String[] chapters() {
+        String[] chapters = (new File(path, CONTENT_DIR)).list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                return new File(dir, filename).isDirectory() && !filename.equals("config.yml") && !filename.equals("toc.yml");
+            }
+        });
+        if(chapters == null) chapters = new String[0];
+        return chapters;
+    }
+
+    /**
+     * Returns an un-ordered list of chunk slugs in the chapter
+     * @param chapterSlug
+     * @return
+     */
+    public String[] chunks(String chapterSlug) {
+        final List<String> chunks = new ArrayList<>();
+        (new File(new File(path, CONTENT_DIR), chapterSlug)).list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                chunks.add(filename.split("\\.")[0]);
+                return false;
+            }
+        });
+        return chunks.toArray(new String[chunks.size()]);
+    }
+
+    /**
+     * Returns the contents of a chunk
+     * @param chapterSlug
+     * @param chunkSlug
+     * @return
+     */
+    public String readChunk(String chapterSlug, String chunkSlug) throws IOException {
+        File chunkFile = new File(new File(new File(path, CONTENT_DIR), chapterSlug), chunkSlug + "." + chunkExt());
+        if(chunkFile.exists() && chunkFile.isFile()) {
+            return FileUtil.readFileToString(chunkFile);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the file extension to use for content (chunks)
+     * @return
+     */
+    private String chunkExt() {
+        String defaultExt = "txt";
+        try {
+            switch (info.getString("content_mime_type")) {
+                case "text/usfm":
+                    return "usfm";
+                case "text/markdown":
+                    return "md";
+                default:
+                    // unknown format
+                    return defaultExt;
+            }
+        } catch (JSONException e) {
+            return defaultExt;
+        }
     }
 }
