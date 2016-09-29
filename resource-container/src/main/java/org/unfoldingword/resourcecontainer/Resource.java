@@ -3,11 +3,6 @@ package org.unfoldingword.resourcecontainer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Represents a resource that can be translated
  */
@@ -17,8 +12,6 @@ public class Resource {
     public final String type;
     public final String translateMode;
     public final String checkingLevel;
-
-    public final List<Format> formats = new ArrayList<>();
 
     public String comments = "";
     public String pubDate = "";
@@ -30,13 +23,6 @@ public class Resource {
      * This is a convenience property
      */
     public String projectSlug = "";
-
-
-    /**
-     * Allows storing legacy data
-     */
-    @Deprecated
-    public Map<String, Object> _legacyData = new HashMap<>();
 
     /**
      * Creates a new resource
@@ -50,14 +36,6 @@ public class Resource {
         this.type = type;
         this.translateMode = translateMode;
         this.checkingLevel = checkingLevel;
-    }
-
-    /**
-     * Adds a format to this resource. e.g. a binary format
-     * @param format
-     */
-    public void addFormat(Format format) {
-        formats.add(format);
     }
 
     /**
@@ -113,22 +91,5 @@ public class Resource {
         if(status.has("comments")) r.comments = deNull(status.getString("comments"));
         // TODO: 9/28/16 there can be more to load
         return r;
-    }
-
-    /**
-     * Represents a physical form of the resource
-     */
-    public static class Format {
-        public String packageVersion;
-        public String mimeType;
-        public int modifiedAt;
-        public String url;
-
-        public Format(String packageVersion, String mimeType, int modifiedAt, String url) {
-            this.packageVersion = packageVersion;
-            this.mimeType = mimeType;
-            this.modifiedAt = modifiedAt;
-            this.url = url;
-        }
     }
 }
