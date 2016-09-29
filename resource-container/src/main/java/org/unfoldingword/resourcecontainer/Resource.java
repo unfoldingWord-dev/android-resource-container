@@ -15,7 +15,7 @@ public class Resource {
     public final String version;
 
     public String comments = "";
-    public int pubDate = 0;
+    public String pubDate = "";
     public String license = "";
 
     /**
@@ -88,7 +88,7 @@ public class Resource {
                 status.getString("version"));
 
         if(status.has("license")) r.license = deNull(status.getString("license"));
-        if(status.has("pub_date")) r.pubDate = status.getInt("pub_date");
+        if(status.has("pub_date")) r.pubDate = deNull(status.getString("pub_date"));
         if(status.has("comments")) r.comments = deNull(status.getString("comments"));
         // TODO: 9/28/16 there can be more to load
         return r;
