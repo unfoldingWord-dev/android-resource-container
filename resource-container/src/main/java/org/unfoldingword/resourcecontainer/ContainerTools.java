@@ -67,8 +67,10 @@ public class ContainerTools {
         JSONObject resource = props.getJSONObject("resource");
 
         // fix keys
-        language.put("direction", language.getString("dir"));
-        language.remove("dir");
+        if(!language.has("direction") && language.has("dir")) {
+            language.put("direction", language.getString("dir"));
+            language.remove("dir");
+        }
 
         String mimeType;
         if(!project.getString("slug").equals("obs") && resource.getString("type").equals("book")) {
