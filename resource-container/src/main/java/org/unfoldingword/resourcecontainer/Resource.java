@@ -12,6 +12,8 @@ import java.util.Map;
  * Represents a resource that can be translated
  */
 public class Resource {
+    public static final String REGULAR_SLUG = "reg";
+
     public final String slug;
     public final String name;
     public final String type;
