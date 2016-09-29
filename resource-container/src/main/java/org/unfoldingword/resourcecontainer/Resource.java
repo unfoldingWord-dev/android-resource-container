@@ -12,11 +12,11 @@ public class Resource {
     public final String type;
     public final String translateMode;
     public final String checkingLevel;
+    public final String version;
 
     public String comments = "";
-    public String pubDate = "";
+    public int pubDate = 0;
     public String license = "";
-    public String version = "";
 
     /**
      * The project this resource belongs to.
@@ -30,12 +30,13 @@ public class Resource {
      * @param name
      * @param type
      */
-    public Resource(String slug, String name, String type, String translateMode, String checkingLevel) {
+    public Resource(String slug, String name, String type, String translateMode, String checkingLevel, String version) {
         this.slug = slug;
         this.name = name;
         this.type = type;
         this.translateMode = translateMode;
         this.checkingLevel = checkingLevel;
+        this.version = version;
     }
 
     /**
@@ -53,7 +54,7 @@ public class Resource {
         statusJson.put("checking_level", checkingLevel);
         statusJson.put("license", deNull(license));
         statusJson.put("version", deNull(version));
-        statusJson.put("pub_date", deNull(pubDate));
+        statusJson.put("pub_date", pubDate);
         statusJson.put("comments", deNull(comments));
         // TODO: 9/28/16 there can be more to write
         json.put("status", statusJson);
@@ -83,11 +84,11 @@ public class Resource {
                 json.getString("name"),
                 json.getString("type"),
                 status.getString("translate_mode"),
-                status.getString("checking_level"));
+                status.getString("checking_level"),
+                status.getString("version"));
 
         if(status.has("license")) r.license = deNull(status.getString("license"));
-        if(status.has("version")) r.version = deNull(status.getString("version"));
-        if(status.has("pub_date")) r.pubDate = deNull(status.getString("pub_date"));
+        if(status.has("pub_date")) r.pubDate = status.getInt("pub_date");
         if(status.has("comments")) r.comments = deNull(status.getString("comments"));
         // TODO: 9/28/16 there can be more to load
         return r;

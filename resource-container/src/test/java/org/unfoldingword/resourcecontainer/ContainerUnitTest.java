@@ -98,6 +98,7 @@ public class ContainerUnitTest {
         resource.put("status", new JSONObject());
         resource.getJSONObject("status").put("translate_mode", "all");
         resource.getJSONObject("status").put("checking_level", "3");
+        resource.getJSONObject("status").put("version", "1");
         resource.getJSONObject("status").put("license", "");
 
         JSONObject json = new JSONObject();
@@ -134,6 +135,7 @@ public class ContainerUnitTest {
         resource.getJSONObject("status").put("translate_mode", "gl");
         resource.getJSONObject("status").put("checking_level", "3");
         resource.getJSONObject("status").put("license", "");
+        resource.getJSONObject("status").put("version", "1");
 
         JSONObject json = new JSONObject();
         json.put("project", project);
