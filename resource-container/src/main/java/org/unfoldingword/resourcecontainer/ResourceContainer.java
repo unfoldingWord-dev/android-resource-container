@@ -64,6 +64,31 @@ public class ResourceContainer {
     public final String slug;
 
     /**
+     * The language represented in this resource container
+     */
+    public final Language language;
+
+    /**
+     * The project represented in this resource container
+     */
+    public final Project project;
+
+    /**
+     * The resource represented in this resource container
+     */
+    public final Resource resource;
+
+    /**
+     * The time this resource container was last modified
+     */
+    public final int modifiedAt;
+
+    /**
+     * The mimetype of the content within this resource container
+     */
+    public final String contentMimeType;
+
+    /**
      * Instantiates a new resource container object
      * @param containerDirectory the directory of the resource container
      * @param containerInfo the resource container info (package.json)
@@ -72,11 +97,14 @@ public class ResourceContainer {
     private ResourceContainer(File containerDirectory, JSONObject containerInfo) throws JSONException {
         this.path = containerDirectory;
         this.info = containerInfo;
-        this.slug = ContainerTools.makeSlug(
-                containerInfo.getJSONObject("language").getString("slug"),
-                containerInfo.getJSONObject("project").getString("slug"),
-                containerInfo.getJSONObject("resource").getString("slug")
-                );
+        this.modifiedAt = info.getInt("modified_at");
+        this.contentMimeType = info.getString("content_mime_type");
+        this.language = Language.fromJSON(containerInfo.getJSONObject("language"));
+        this.project = Project.fromJSON(containerInfo.getJSONObject("project"));
+        this.project.languageSlug = language.slug;
+        this.resource = Resource.fromJSON(containerInfo.getJSONObject("resource"));
+        this.resource.projectSlug = project.slug;
+        this.slug = ContainerTools.makeSlug(language.slug, project.slug, resource.slug);
 
         // load config
         File configFile = new File(containerDirectory, CONTENT_DIR + "/config.yml");

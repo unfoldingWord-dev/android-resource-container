@@ -58,12 +58,17 @@ public class ContainerTools {
      * @return the newly converted container
      */
     public static ResourceContainer convertResource(String data, File directory, JSONObject props) throws Exception {
+        // TODO: 9/28/16 now that we have language, project, and resource classes we can pass these in as parameters
         if(!props.has("language") || !props.has("project") || !props.has("resource")
                 || !props.getJSONObject("resource").has("type")) throw new Exception("Missing required parameters");
 
         JSONObject project = props.getJSONObject("project");
         JSONObject language = props.getJSONObject("language");
         JSONObject resource = props.getJSONObject("resource");
+
+        // fix keys
+        language.put("direction", language.getString("dir"));
+        language.remove("dir");
 
         String mimeType;
         if(!project.getString("slug").equals("obs") && resource.getString("type").equals("book")) {
