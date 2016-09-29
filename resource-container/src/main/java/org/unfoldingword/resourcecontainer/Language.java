@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Represents a single language
  */
 
-class Language implements Comparable {
+public class Language implements Comparable {
     public final String slug;
     public final String name;
     public final String direction;
