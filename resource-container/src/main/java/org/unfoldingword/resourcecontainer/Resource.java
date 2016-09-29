@@ -3,6 +3,11 @@ package org.unfoldingword.resourcecontainer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Represents a resource that can be translated
  */
@@ -14,8 +19,19 @@ public class Resource {
     public final String checkingLevel;
     public final String version;
 
+    /**
+     * Comments about this resource
+     */
     public String comments = "";
+
+    /**
+     * The date this resource was published
+     */
     public String pubDate = "";
+
+    /**
+     * The license under which this content exists
+     */
     public String license = "";
 
     /**
@@ -25,18 +41,41 @@ public class Resource {
     public String projectSlug = "";
 
     /**
+     * A list of formats in which this resource exists
+     * e.g. binary formats
+     */
+    public final List<Format> formats = new ArrayList<>();
+
+    /**
+     * Storage for legacy data while we transition from the old api to the new.
+     */
+    public Map<String, Object> _legacyData = new HashMap<>();
+
+    /**
      * Creates a new resource
-     * @param slug
-     * @param name
-     * @param type
+     * @param slug the resource identifier
+     * @param name the human readable name of this resource
+     * @param type the type of resource this is
+     * @param translateMode the mode (of operation within an app) in which this resource can be translated
+     * @param checkingLevel the greatest level of checking that has been completed on this resource
+     * @param version the human readable version of this resource
      */
     public Resource(String slug, String name, String type, String translateMode, String checkingLevel, String version) {
         this.slug = slug;
         this.name = name;
         this.type = type;
         this.translateMode = translateMode;
+        // TODO: 9/29/16 checkingLevel should probably be an integer
         this.checkingLevel = checkingLevel;
         this.version = version;
+    }
+
+    /**
+     * Adds a format to this resource
+     * @param format e.g. a binary format
+     */
+    public void addFormat(Format format) {
+        formats.add(format);
     }
 
     /**
@@ -92,5 +131,22 @@ public class Resource {
         if(status.has("comments")) r.comments = deNull(status.getString("comments"));
         // TODO: 9/28/16 there can be more to load
         return r;
+    }
+
+    /**
+     * Represents a physical form of the resource
+     */
+    public static class Format {
+        public String packageVersion;
+        public String mimeType;
+        public int modifiedAt;
+        public String url;
+
+        public Format(String packageVersion, String mimeType, int modifiedAt, String url) {
+            this.packageVersion = packageVersion;
+            this.mimeType = mimeType;
+            this.modifiedAt = modifiedAt;
+            this.url = url;
+        }
     }
 }
