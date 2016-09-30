@@ -306,17 +306,22 @@ public class ResourceContainer {
     }
 
     /**
-     * Returns the contents of a chunk
+     * Returns the contents of a chunk.
+     * If the chunk does not exist or there is an exception an empty string will be returned
      * @param chapterSlug
      * @param chunkSlug
      * @return
      */
-    public String readChunk(String chapterSlug, String chunkSlug) throws IOException {
+    public String readChunk(String chapterSlug, String chunkSlug) {
         File chunkFile = new File(new File(new File(path, CONTENT_DIR), chapterSlug), chunkSlug + "." + chunkExt());
         if(chunkFile.exists() && chunkFile.isFile()) {
-            return FileUtil.readFileToString(chunkFile);
+            try {
+                return FileUtil.readFileToString(chunkFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return null;
+        return "";
     }
 
     /**
