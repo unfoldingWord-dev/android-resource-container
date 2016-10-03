@@ -379,7 +379,18 @@ public class ContainerTools {
         if(languageSlug == null || languageSlug.isEmpty()
                 || projectSlug == null || projectSlug.isEmpty()
                 || resourceSlug == null || resourceSlug.isEmpty()) throw new InvalidParameterException("Invalid resource container slug parameters");
-        return languageSlug + "_" + projectSlug + "_" + resourceSlug;
+        return languageSlug + ResourceContainer.slugDelimiter + projectSlug + ResourceContainer.slugDelimiter + resourceSlug;
+    }
+
+    /**
+     * Breaks a resource container slug into it's delimited sections.
+     * Those are language, project, resource.
+     *
+     * @param resourceContainerSlug
+     * @return
+     */
+    public static String[] explodeSlug(String resourceContainerSlug) {
+        return resourceContainerSlug.split(ResourceContainer.slugDelimiter);
     }
 
     /**

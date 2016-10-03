@@ -29,6 +29,7 @@ import java.util.Map;
  */
 public class ResourceContainer {
     public static final String version = "0.1";
+    public static final String slugDelimiter = "_";
     public static final String fileExtension = "tsrc";
     public static final String baseMimeType = "application/tsrc";
 
