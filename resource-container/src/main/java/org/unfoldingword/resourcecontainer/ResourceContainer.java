@@ -333,6 +333,8 @@ public class ResourceContainer {
         String defaultExt = "txt";
         try {
             switch (info.getString("content_mime_type")) {
+                case "text/usx":
+                    return "usx";
                 case "text/usfm":
                     return "usfm";
                 case "text/markdown":
