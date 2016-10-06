@@ -7,8 +7,8 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.kamranzafar.jtar.TarInputStream;
-import org.kamranzafar.jtar.TarOutputStream;
+import org.unfoldingword.tools.jtar.TarInputStream;
+import org.unfoldingword.tools.jtar.TarOutputStream;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

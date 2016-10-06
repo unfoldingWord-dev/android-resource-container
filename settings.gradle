@@ -1,1 +1,1 @@
-include ':resource-container'
+include ':resource-container', ':jtar'

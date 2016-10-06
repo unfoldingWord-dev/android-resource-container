@@ -1,8 +1,8 @@
 package org.unfoldingword.resourcecontainer;
 
-import org.kamranzafar.jtar.TarEntry;
-import org.kamranzafar.jtar.TarInputStream;
-import org.kamranzafar.jtar.TarOutputStream;
+import org.unfoldingword.tools.jtar.TarEntry;
+import org.unfoldingword.tools.jtar.TarInputStream;
+import org.unfoldingword.tools.jtar.TarOutputStream;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
