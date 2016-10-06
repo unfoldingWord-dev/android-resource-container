@@ -142,8 +142,7 @@ public class TarHeader {
 
 	/**
 	 * Parse an entry name from a header buffer.
-	 * 
-	 * @param name
+	 *
 	 * @param header
 	 *            The header buffer from which to parse.
 	 * @param offset
@@ -169,7 +168,7 @@ public class TarHeader {
 	 * Determine the number of bytes in an entry name.
 	 * 
 	 * @param name
-	 * @param header
+	 * @param buf
 	 *            The header buffer from which to parse.
 	 * @param offset
 	 *            The offset into the buffer from which to parse.
@@ -195,7 +194,7 @@ public class TarHeader {
 	 * Creates a new header for a file/directory entry.
 	 * 
 	 * 
-	 * @param name
+	 * @param entryName
 	 *            File name
 	 * @param size
 	 *            File size in bytes

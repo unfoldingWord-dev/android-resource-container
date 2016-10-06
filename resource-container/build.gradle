@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/unfoldingWord-dev/android-resource-container'
     gitUrl = 'https://github.com/unfoldingWord-dev/android-resource-container.git'
 
-    libraryVersion = '0.6.0'
+    libraryVersion = '0.6.2'
 
     developerId = 'neutrinog'
     developerName = 'Joel Lonbeck'
@@ -31,8 +31,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 20
-        versionName "0.6.0"
+        versionCode 22
+        versionName "0.6.2"
     }
     buildTypes {
         release {
@@ -55,7 +55,6 @@ dependencies {
     compile 'org.kamranzafar:jtar:2.3'
     compile files('libs/commons-compress-1.12.jar')
     compile 'com.esotericsoftware.yamlbeans:yamlbeans:1.09'
-    compile project(':jtar')
 }
 
 if (System.env.TRAVIS != 'true') {
