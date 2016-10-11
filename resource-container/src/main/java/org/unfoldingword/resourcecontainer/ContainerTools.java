@@ -410,4 +410,72 @@ public class ContainerTools {
     public static String typeToMime(String resourceType) {
         return ResourceContainer.baseMimeType + "+" + resourceType;
     }
+
+    /**
+     * Parses a link. This could be an external link or a resource container link
+     *
+     * @param link
+     * @throws Exception if the link is invalid
+     */
+    public static Link parseLink(String link) throws Exception {
+        Pattern anonymousPattern = Pattern.compile("\\[\\[([^\\]]*)\\]\\]", Pattern.DOTALL);
+        Pattern titledPattern = Pattern.compile("\\[([^\\]]*)\\]\\(([^\\)]*)\\)", Pattern.DOTALL);
+
+        String linkTitle = null;
+        String linkPath = null;
+        Matcher m;
+        int numMatches = 1;
+
+        // find anonymous links
+        m = anonymousPattern.matcher(link);
+        while(m.find()) {
+            if(numMatches > 1) throw new Exception("Invalid link! Multiple links found");
+            numMatches ++;
+            linkPath = m.group(1).toLowerCase();
+        }
+
+        // find titled links
+        m = titledPattern.matcher(link);
+        numMatches = 1;
+        while(m.find()) {
+            if(numMatches > 1) throw new Exception("Invalid link! Multiple links found");
+            numMatches ++;
+            linkTitle = m.group(1);
+            linkPath = m.group(2).toLowerCase();
+        }
+
+        // process link path
+        if(linkPath != null) {
+            // external link
+            if(linkPath.startsWith("http")) {
+                return new Link(linkTitle, linkPath);
+            }
+            return parseResourceLink(linkTitle, linkPath);
+        }
+
+        return null;
+    }
+
+    /**
+     * Parses a resource container link
+     * @param title
+     * @param path
+     * @return
+     */
+    private static Link parseResourceLink(String title, String path) {
+        return null;
+    }
+
+    /**
+     * Returns a list of links found in the text.
+     * This is used to turn inline Bible passages into links.
+     * The returned links will include their position within the charsequence
+     *
+     * @param text the text that will be searched for Bible passages
+     * @return
+     */
+    public static List<Link> findLinks(CharSequence text) {
+        // TODO: 10/11/16 automatically parse bible passages.
+        return null;
+    }
 }
