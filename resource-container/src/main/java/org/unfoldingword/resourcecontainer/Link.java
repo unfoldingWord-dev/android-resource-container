@@ -126,7 +126,7 @@ public class Link {
         Pattern titledPattern = Pattern.compile("\\[([^\\]]*)\\]\\(([^\\)]*)\\)", Pattern.DOTALL);
 
         String linkTitle = null;
-        String linkPath = null;
+        String linkPath = link;
         Matcher m;
         int numMatches = 1;
 
