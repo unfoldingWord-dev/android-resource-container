@@ -1,13 +1,14 @@
 package org.unfoldingword.resourcecontainer;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * Created by joel on 10/11/16.
  */
-
 public class GenericLinkTest {
 
     // anonymous
@@ -160,6 +161,7 @@ public class GenericLinkTest {
 
     @Test
     public void titledMediaLink() throws Exception {
+        // without preceding slash
         Link l = ContainerTools.parseLink("[Link Title](image:language/project/resource)");
         assertEquals("Link Title", l.title);
         assertEquals("language", l.language);
@@ -171,6 +173,7 @@ public class GenericLinkTest {
 
     @Test
     public void titledMediaAltLink() throws Exception {
+        // with perceding slash
         Link l = ContainerTools.parseLink("[Link Title](image:/language/project/resource)");
         assertEquals("Link Title", l.title);
         assertEquals("language", l.language);

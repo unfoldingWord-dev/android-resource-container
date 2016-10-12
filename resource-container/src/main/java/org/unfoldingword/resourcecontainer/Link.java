@@ -34,7 +34,8 @@ public class Link {
     }
 
     /**
-     * Creates a new resource container link
+     * Creates a new resource container link.
+     *
      * @param protocal used to indicate if this is a media link
      * @param title the human readable title of the link
      * @param language the language of the linked resource container

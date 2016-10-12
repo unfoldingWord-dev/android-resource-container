@@ -1,5 +1,7 @@
 package org.unfoldingword.resourcecontainer;
 
+import android.text.TextUtils;
+
 import com.esotericsoftware.yamlbeans.YamlWriter;
 
 import org.json.JSONArray;
@@ -9,7 +11,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -462,9 +466,112 @@ public class ContainerTools {
      * @param path
      * @return
      */
-    private static Link parseResourceLink(String title, String path) {
-        // TODO: 10/11/16 finish parsing the resource links
+    private static Link parseResourceLink(String title, String path) throws Exception {
+        Pattern pattern = Pattern.compile("^((\\w+):)?\\/?(.*)", Pattern.DOTALL);
+
+        String protocal = null;
+        String language = null;
+        String project = null;
+        String resource = null;
+        String chapter = null;
+        String chunk = null;
+        String lastChunk = null;
+        String arguments = null;
+
+
+        // pull out the protocal
+        // TRICKY: also pulls off the first / so our string splitting correctly finds the language
+        Matcher m = pattern.matcher(path);
+        if(m.find()) {
+            protocal = m.group(2);
+            path = m.group(3);
+        }
+
+        String[] components = path.split("\\/");
+
+        // /chapter
+        if(components.length == 1) arguments = components[0];
+
+        // /language/project
+        if(components.length > 1) {
+            language = components[0];
+            project = components[1];
+        }
+
+        // /language/project/resource
+        if(components.length > 2) {
+            language = components[0];
+            project = components[1];
+            resource = components[2];
+
+            // TRICKY: resource can be skipped
+            // /language/project/chapter:chunk
+            if(resource.contains(":")) {
+                arguments = resource;
+                resource = null;
+            }
+        }
+
+        // /language/project/resource/args
+        if(components.length > 3) {
+            language = components[0];
+            project = components[1];
+            resource = components[2];
+            arguments = components[3];
+            // re-build arguments that had the delimiter
+            for(int i = 4; i < components.length - 1; i ++) {
+                arguments += "/" + components[i];
+            }
+        }
+
+        // get chapter:chunk from arguments
+        chapter = arguments;
+        if(arguments != null && arguments.contains(":")) {
+            String[] bits = arguments.split(":");
+            chapter = bits[0];
+            chunk = bits[1];
+        }
+
+        // get last chunk
+        if(chunk != null && chunk.contains("-")) {
+            String[] bits = chunk.split("-");
+            chunk = bits[0];
+            lastChunk = bits[1];
+        }
+
+        // assume resource
+        if(resource == null && project != null) resource = project;
+
+        // nullify empty strings
+        protocal = nullEmpty(protocal);
+        title = nullEmpty(title);
+        language = nullEmpty(language);
+        project = nullEmpty(project);
+        resource = nullEmpty(resource);
+        arguments = nullEmpty(arguments);
+        chapter = nullEmpty(chapter);
+        chunk = nullEmpty(chunk);
+        lastChunk = nullEmpty(lastChunk);
+
+        // validate chunks
+        if(chunk != null && chunk.contains(",")
+                || lastChunk != null && lastChunk.contains(",")) throw new Exception("Invalid passage link " + path);
+
+        if(project != null && resource  != null || arguments != null) {
+            return new Link(protocal, title, language, project, resource, arguments, chapter, chunk, lastChunk);
+        }
         return null;
+    }
+
+
+    /**
+     * Returns the value if it is not empty otherwise null
+     * @param value
+     * @return
+     */
+    private static String nullEmpty(String value) {
+        if(value != null && value.isEmpty()) return null;
+        return value;
     }
 
     /**
