@@ -395,7 +395,7 @@ public class ContainerTools {
      * @param chapterNumber the chapter number that is being localized
      * @return the localized chapter title
      */
-    private String localizeChapterTitle(String languageSlug, String chapterNumber) {
+    private static String localizeChapterTitle(String languageSlug, String chapterNumber) {
         Map<String, String> translations = new HashMap<>();
         translations.put("ar", "الفصل %");
         translations.put("en", "Chapter %");
