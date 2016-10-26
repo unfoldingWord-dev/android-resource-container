@@ -1,7 +1,5 @@
 package org.unfoldingword.resourcecontainer;
 
-import android.text.TextUtils;
-
 import com.esotericsoftware.yamlbeans.YamlWriter;
 
 import org.json.JSONArray;
@@ -11,9 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -115,13 +111,16 @@ public class ContainerTools {
             List toc = new ArrayList();
 
             // front matter
-            File frontDir = new File(contentDir, "front");
-            frontDir.mkdirs();
-            FileUtil.writeStringToFile(new File(frontDir, "title." + chunkExt), project.getString("name"));
-            Map frontToc = new HashMap();
-            frontToc.put("chapter", "title");
-            frontToc.put("chunks", new String[]{"title"});
-            toc.add(frontToc);
+            if(!resource.getString("type").equals("help") && !resource.getString("type").equals("dict")) {
+                // TRICKY: helps do not have a translatable title
+                File frontDir = new File(contentDir, "front");
+                frontDir.mkdirs();
+                FileUtil.writeStringToFile(new File(frontDir, "title." + chunkExt), project.getString("name"));
+                Map frontToc = new HashMap();
+                frontToc.put("chapter", "title");
+                frontToc.put("chunks", new String[]{"title"});
+                toc.add(frontToc);
+            }
 
             // main content
             if(resource.getString("type").equals("book")) {
@@ -145,9 +144,12 @@ public class ContainerTools {
                     chapterDir.mkdirs();
 
                     // chapter title
+                    ((List)chapterTOC.get("chunks")).add("title");
                     if(chapter.has("title") && !chapter.getString("title").isEmpty()) {
-                        ((List)chapterTOC.get("chunks")).add("title");
                         FileUtil.writeStringToFile(new File(chapterDir, "title." + chunkExt), chapter.getString("title"));
+                    } else {
+                        String title = localizeChapterTitle(language.getString("slug"), chapter.getString("number"));
+                        FileUtil.writeStringToFile(new File(chapterDir, "title." + chunkExt), title);
                     }
                     // frames
                     for(int f = 0; f < chapter.getJSONArray("frames").length(); f ++) {
@@ -217,6 +219,9 @@ public class ContainerTools {
                         String[] slugs = chunk.getString("id").split("-");
                         if(slugs.length != 2) continue;
 
+                        // fix for chunk 00.txt bug
+                        if(slugs[1].trim().equals("00")) continue;
+
                         File chapterDir = new File(contentDir, slugs[0]);
                         chapterDir.mkdirs();
                         String body = "";
@@ -224,7 +229,9 @@ public class ContainerTools {
                             JSONObject note = chunk.getJSONArray("tn").getJSONObject(n);
                             body += "\n\n#" + note.getString("ref") + "\n\n" + note.getString("text");
                         }
-                        FileUtil.writeStringToFile(new File(chapterDir, slugs[1] + "." + chunkExt), body.trim());
+                        if(!body.trim().isEmpty()) {
+                            FileUtil.writeStringToFile(new File(chapterDir, slugs[1] + "." + chunkExt), body.trim());
+                        }
                     }
                 } else if(resource.getString("slug").equals("tq")) {
                     for(int c = 0; c < json.length(); c ++) {
@@ -286,6 +293,9 @@ public class ContainerTools {
                 }
             } else if(resource.getString("type").equals("man")) {
                 JSONObject json = new JSONObject(data);
+
+                Map tocMap = new HashMap();
+
                 for(int a = 0; a < json.getJSONArray("articles").length(); a ++) {
                     JSONObject article = json.getJSONArray("articles").getJSONObject(a);
                     Map articleConfig = new HashMap();
@@ -322,6 +332,25 @@ public class ContainerTools {
                         articleConfig.put("dependencies", dependencies);
                         config.put(slug, articleConfig);
                     }
+
+                    Map articleTOC = new HashMap();
+                    articleTOC.put("chapter", article.getString("id"));
+                    List chunkTOC = new ArrayList();
+                    chunkTOC.add("title");
+                    chunkTOC.add("sub-title");
+                    chunkTOC.add("01");
+                    articleTOC.put("chunks", chunkTOC);
+
+                    tocMap.put(article.getString("id"), articleTOC);
+                }
+
+                // build toc from what we see in the api
+                Pattern linkPattern = Pattern.compile("/\\[[^\\[\\]]*\\]\\s*\\(([^\\(\\)]*)\\)/");
+                Matcher match = linkPattern.matcher(json.getString("toc"));
+                while(match.find()) {
+                    String key = match.group(1).replace("_", "-");
+                    Object val = tocMap.get(key);
+                    if(val != null) toc.add(val);
                 }
             } else {
                 throw new Exception("Unsupported resource container type " + resource.getString("type"));
@@ -355,6 +384,34 @@ public class ContainerTools {
         }
 
         return ResourceContainer.load(directory);
+    }
+
+    /**
+     * Returns a localized chapter title. e.g. "Chapter 1"
+     * If the language does not have a match a default localization will be used.
+     *
+     * If chapter_number is a number it will be parsed as an int to strip leading 0's
+     * @param languageSlug the language into which the chapter title will be localized
+     * @param chapterNumber the chapter number that is being localized
+     * @return the localized chapter title
+     */
+    private String localizeChapterTitle(String languageSlug, String chapterNumber) {
+        Map<String, String> translations = new HashMap<>();
+        translations.put("ar", "الفصل %");
+        translations.put("en", "Chapter %");
+        translations.put("ru", "Глава %");
+        translations.put("hu", "%. fejezet");
+        translations.put("sr-Latin", "Поглавље %");
+        translations.put("default", "Chapter %");
+
+        String title = translations.get(languageSlug);
+        if(title == null) title = translations.get("default");
+        try {
+            int num = Integer.parseInt(chapterNumber);
+            return title.replace("%", num + "");
+        } catch (NumberFormatException e) {
+            return title.replace("%", chapterNumber);
+        }
     }
 
     /**
