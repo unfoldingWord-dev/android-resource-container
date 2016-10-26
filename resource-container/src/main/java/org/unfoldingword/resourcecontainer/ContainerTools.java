@@ -117,7 +117,7 @@ public class ContainerTools {
                 frontDir.mkdirs();
                 FileUtil.writeStringToFile(new File(frontDir, "title." + chunkExt), project.getString("name"));
                 Map frontToc = new HashMap();
-                frontToc.put("chapter", "title");
+                frontToc.put("chapter", "front");
                 frontToc.put("chunks", new String[]{"title"});
                 toc.add(frontToc);
             }
@@ -268,33 +268,34 @@ public class ContainerTools {
                     String body = "#" + word.getString("term") + "\n\n" + word.getString("def");
                     FileUtil.writeStringToFile(new File(wordDir, "01." + chunkExt), body);
 
-                    if(JSONHasLength(word, "aliases") || JSONHasLength(word, "cf") || JSONHasLength(word, "ex")) {
-                        Map<String, List> wordConfig = new HashMap();
-                        if(JSONHasLength(word, "cf")) {
-                            wordConfig.put("see_also", new ArrayList());
-                            for(int i = 0; i < word.getJSONArray("cf").length(); i ++) {
-                                wordConfig.get("see_also").add(word.getJSONArray("cf").get(i));
-                            }
+                    Map<String, Object> wordConfig = new HashMap();
+                    wordConfig.put("def_title", word.getString("def_title"));
+
+                    if(JSONHasLength(word, "cf")) {
+                        wordConfig.put("see_also", new ArrayList());
+                        for(int i = 0; i < word.getJSONArray("cf").length(); i ++) {
+                            ((List)wordConfig.get("see_also")).add(word.getJSONArray("cf").get(i));
                         }
-                        if(JSONHasLength(word, "aliases")) {
-                            wordConfig.put("aliases", new ArrayList());
-                            for(int i = 0; i < word.getJSONArray("aliases").length(); i ++) {
-                                wordConfig.get("aliases").add(word.getJSONArray("aliases").get(i));
-                            }
-                        }
-                        if(JSONHasLength(word, "ex")) {
-                            wordConfig.put("examples", new ArrayList());
-                            for(int i = 0; i < word.getJSONArray("ex").length(); i ++) {
-                                wordConfig.get("examples").add(word.getJSONArray("ex").get(i));
-                            }
-                        }
-                        config.put(word.getString("id"), wordConfig);
                     }
+                    if(JSONHasLength(word, "aliases")) {
+                        wordConfig.put("aliases", new ArrayList());
+                        for(int i = 0; i < word.getJSONArray("aliases").length(); i ++) {
+                            ((List)wordConfig.get("aliases")).add(word.getJSONArray("aliases").get(i));
+                        }
+                    }
+                    if(JSONHasLength(word, "ex")) {
+                        wordConfig.put("examples", new ArrayList());
+                        for(int i = 0; i < word.getJSONArray("ex").length(); i ++) {
+                            ((List)wordConfig.get("examples")).add(word.getJSONArray("ex").get(i));
+                        }
+                    }
+                    config.put(word.getString("id"), wordConfig);
                 }
             } else if(resource.getString("type").equals("man")) {
                 JSONObject json = new JSONObject(data);
 
                 Map tocMap = new HashMap();
+                config.put("content", new HashMap());
 
                 for(int a = 0; a < json.getJSONArray("articles").length(); a ++) {
                     JSONObject article = json.getJSONArray("articles").getJSONObject(a);
@@ -330,11 +331,11 @@ public class ContainerTools {
                     if(recommended.size() > 0 || dependencies.size() > 0) {
                         articleConfig.put("recommended", recommended);
                         articleConfig.put("dependencies", dependencies);
-                        config.put(slug, articleConfig);
+                        ((HashMap<String, Object>)config.get("content")).put(slug, articleConfig);
                     }
 
                     Map articleTOC = new HashMap();
-                    articleTOC.put("chapter", article.getString("id"));
+                    articleTOC.put("chapter", slug);
                     List chunkTOC = new ArrayList();
                     chunkTOC.add("title");
                     chunkTOC.add("sub-title");
@@ -345,10 +346,10 @@ public class ContainerTools {
                 }
 
                 // build toc from what we see in the api
-                Pattern linkPattern = Pattern.compile("/\\[[^\\[\\]]*\\]\\s*\\(([^\\(\\)]*)\\)/");
+                Pattern linkPattern = Pattern.compile("\\[[^\\[\\]]*\\]\\s*\\(([^\\(\\)]*)\\)", Pattern.DOTALL);
                 Matcher match = linkPattern.matcher(json.getString("toc"));
                 while(match.find()) {
-                    String key = match.group(1).replace("_", "-");
+                    String key = match.group(1);
                     Object val = tocMap.get(key);
                     if(val != null) toc.add(val);
                 }
@@ -395,7 +396,7 @@ public class ContainerTools {
      * @param chapterNumber the chapter number that is being localized
      * @return the localized chapter title
      */
-    private static String localizeChapterTitle(String languageSlug, String chapterNumber) {
+    public static String localizeChapterTitle(String languageSlug, String chapterNumber) {
         Map<String, String> translations = new HashMap<>();
         translations.put("ar", "الفصل %");
         translations.put("en", "Chapter %");
@@ -412,6 +413,19 @@ public class ContainerTools {
         } catch (NumberFormatException e) {
             return title.replace("%", chapterNumber);
         }
+    }
+
+    /**
+     * Returns a localized chapter title. e.g. "Chapter 1"
+     * If the language does not have a match a default localization will be used.
+     *
+     * If chapter_number is a number it will be parsed as an int to strip leading 0's
+     * @param languageSlug the language into which the chapter title will be localized
+     * @param chapterNumber the chapter number that is being localized
+     * @return the localized chapter title
+     */
+    public static String localizeChapterTitle(String languageSlug, int chapterNumber) {
+        return localizeChapterTitle(languageSlug, chapterNumber + "");
     }
 
     /**
