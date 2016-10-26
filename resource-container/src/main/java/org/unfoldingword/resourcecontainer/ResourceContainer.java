@@ -182,7 +182,9 @@ public class ResourceContainer {
      * @throws Exception
      * @return
      */
-    public static ResourceContainer open(File containerArchive, File containerDirectory) throws Exception{
+    public static ResourceContainer open(File containerArchive, File containerDirectory) throws Exception {
+        if(containerDirectory.exists()) return load(containerDirectory);
+
         if(!containerArchive.exists()) throw new Exception("Missing resource container");
         File tempFile = new File(containerArchive + ".tmp.tar");
         FileOutputStream out = null;
@@ -326,7 +328,7 @@ public class ResourceContainer {
     }
 
     /**
-     * Returns the file extension to use for content (chunks)
+     * Returns the file extension to use for content files (chunks)
      * @return
      */
     private String chunkExt() {
