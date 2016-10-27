@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/unfoldingWord-dev/android-resource-container'
     gitUrl = 'https://github.com/unfoldingWord-dev/android-resource-container.git'
 
-    libraryVersion = '0.7.1'
+    libraryVersion = '0.7.2'
 
     developerId = 'neutrinog'
     developerName = 'Joel Lonbeck'

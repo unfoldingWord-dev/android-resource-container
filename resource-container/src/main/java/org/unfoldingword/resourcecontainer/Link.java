@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  */
 
 public class Link {
-    public final String title;
+    public String title;
     public final String url;
     public final String resource;
     public final String project;
