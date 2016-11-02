@@ -212,6 +212,12 @@ public class ContainerUnitTest {
         assertEquals("bible", container.project.slug);
         assertEquals("text/markdown", container.contentMimeType);
         assertEquals("Facts", ((Map<String, Object>)container.config.get("jewishleaders")).get("def_title"));
+        Map adamConfig = (Map<String, Object>)container.config.get("adam");
+        List<String> adamRelated = (List<String>)adamConfig.get("see_also");
+        assertTrue(adamRelated.contains("eve"));
+        assertFalse(adamRelated.contains("Eve"));
+        assertFalse(adamRelated.contains("eve|Eve"));
+        assertFalse(adamRelated.contains("eve|eve"));
     }
     @Test
     public void convertTAResource() throws Exception {

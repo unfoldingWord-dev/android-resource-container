@@ -274,7 +274,12 @@ public class ContainerTools {
                     if(JSONHasLength(word, "cf")) {
                         wordConfig.put("see_also", new ArrayList());
                         for(int i = 0; i < word.getJSONArray("cf").length(); i ++) {
-                            ((List)wordConfig.get("see_also")).add(word.getJSONArray("cf").get(i));
+                            // TRICKY: some id's have the title attached it it like: eve|Eve
+                            String[] parts = word.getJSONArray("cf").getString(i).split("\\|");
+                            String id = parts[0].toLowerCase();
+                            if(!((List)wordConfig.get("see_also")).contains(id)) {
+                                ((List) wordConfig.get("see_also")).add(id);
+                            }
                         }
                     }
                     if(JSONHasLength(word, "aliases")) {
