@@ -115,7 +115,7 @@ public class ContainerTools {
                 // TRICKY: helps do not have a translatable title
                 File frontDir = new File(contentDir, "front");
                 frontDir.mkdirs();
-                FileUtil.writeStringToFile(new File(frontDir, "title." + chunkExt), project.getString("name"));
+                FileUtil.writeStringToFile(new File(frontDir, "title." + chunkExt), project.getString("name").trim());
                 Map frontToc = new HashMap();
                 frontToc.put("chapter", "front");
                 frontToc.put("chunks", new String[]{"title"});
@@ -151,6 +151,7 @@ public class ContainerTools {
                         String title = localizeChapterTitle(language.getString("slug"), chapter.getString("number"));
                         FileUtil.writeStringToFile(new File(chapterDir, "title." + chunkExt), title);
                     }
+
                     // frames
                     for(int f = 0; f < chapter.getJSONArray("frames").length(); f ++) {
                         JSONObject frame = chapter.getJSONArray("frames").getJSONObject(f);
@@ -285,13 +286,19 @@ public class ContainerTools {
                     if(JSONHasLength(word, "aliases")) {
                         wordConfig.put("aliases", new ArrayList());
                         for(int i = 0; i < word.getJSONArray("aliases").length(); i ++) {
-                            ((List)wordConfig.get("aliases")).add(word.getJSONArray("aliases").get(i));
+                            String[] aliases = word.getJSONArray("aliases").getString(i).split(",");
+                            for(String alias:aliases) {
+                                ((List) wordConfig.get("aliases")).add(alias.trim());
+                            }
                         }
                     }
                     if(JSONHasLength(word, "ex")) {
                         wordConfig.put("examples", new ArrayList());
                         for(int i = 0; i < word.getJSONArray("ex").length(); i ++) {
-                            ((List)wordConfig.get("examples")).add(word.getJSONArray("ex").get(i));
+                            JSONObject example = word.getJSONArray("ex").getJSONObject(i);
+                            if(example.has("ref")) {
+                                ((List) wordConfig.get("examples")).add(example.getString("ref"));
+                            }
                         }
                     }
                     config.put(word.getString("id"), wordConfig);
