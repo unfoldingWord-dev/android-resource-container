@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/unfoldingWord-dev/android-resource-container'
     gitUrl = 'https://github.com/unfoldingWord-dev/android-resource-container.git'
 
-    libraryVersion = '0.7.3'
+    libraryVersion = '0.7.4'
 
     developerId = 'neutrinog'
     developerName = 'Joel Lonbeck'
@@ -31,8 +31,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 31
-        versionName "0.7.3"
+        versionCode 32
+        versionName "0.7.4"
     }
     buildTypes {
         release {
