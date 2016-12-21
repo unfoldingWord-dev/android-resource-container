@@ -174,6 +174,10 @@ public class ContainerUnitTest {
         json.put("modified_at", 0);
         ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_gen_ulb"), json);
         assertNotNull(container);
+        assertTrue(container.chunks("001").length == 0);
+        assertTrue(container.chunks("01").length > 0);
+        assertTrue(container.readChunk("01", "001").isEmpty());
+        assertTrue(!container.readChunk("01", "01").isEmpty());
     }
     @Test
     public void convertTWResource() throws Exception {
@@ -261,6 +265,45 @@ public class ContainerUnitTest {
         assertNotNull(((Map<String, Object>)container.config.get("content")).get("translate-manual"));
     }
     @Test
+    public void convertTNResource() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL url = classLoader.getResource("raw_tn.json");
+        File sourceFile = new File(url.getPath());
+        String data = FileUtil.readFileToString(sourceFile);
+
+        JSONObject project = new JSONObject();
+        project.put("slug", "psa");
+        project.put("name", "Psalms");
+        project.put("desc", "");
+        project.put("icon", "");
+        project.put("sort", 0);
+        JSONObject language = new JSONObject();
+        language.put("slug", "en");
+        language.put("name", "English");
+        language.put("dir", "ltr");
+        JSONObject resource = new JSONObject();
+        resource.put("slug", "tn");
+        resource.put("name", "translationNotes");
+        resource.put("type", "help");
+        resource.put("status", new JSONObject());
+        resource.getJSONObject("status").put("translate_mode", "gl");
+        resource.getJSONObject("status").put("checking_level", "3");
+        resource.getJSONObject("status").put("license", "");
+        resource.getJSONObject("status").put("version", "1");
+
+        JSONObject json = new JSONObject();
+        json.put("project", project);
+        json.put("language", language);
+        json.put("resource", resource);
+        json.put("modified_at", 0);
+        ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_psa_tn"), json);
+        assertFalse(container.readChunk("01", "01").isEmpty());
+        assertEquals(0, container.chunks("001").length);
+        assertFalse(container.readChunk("150", "01").isEmpty());
+        assertEquals("psa", container.project.slug);
+        assertEquals("text/markdown", container.contentMimeType);
+    }
+    @Test
     public void semverComparison() throws Exception {
         final int EQUAL = 0;
         final int GREATER_THAN = 1;
@@ -304,5 +347,32 @@ public class ContainerUnitTest {
         assertEquals("Поглавље 1", ContainerTools.localizeChapterTitle("sr-Latin", 1));
         assertEquals("Chapter 1", ContainerTools.localizeChapterTitle("missing", 1));
 
+    }
+
+    @Test
+    public void normalizeSlug() throws Exception {
+        try {
+            ContainerTools.normalizeSlug("");
+            assertTrue(false);
+        } catch(Exception e) {
+
+        }
+        try {
+            ContainerTools.normalizeSlug(null);
+            assertTrue(false);
+        } catch(Exception e) {
+
+        }
+
+        assertEquals("01", ContainerTools.normalizeSlug("1"));
+        assertEquals("01", ContainerTools.normalizeSlug("0001"));
+        assertEquals("00", ContainerTools.normalizeSlug("0"));
+        assertEquals("00", ContainerTools.normalizeSlug("00"));
+        assertEquals("12", ContainerTools.normalizeSlug("12"));
+        assertEquals("123", ContainerTools.normalizeSlug("123"));
+        assertEquals("123", ContainerTools.normalizeSlug("00123"));
+        assertEquals("a", ContainerTools.normalizeSlug("a"));
+        assertEquals("word", ContainerTools.normalizeSlug("word"));
+        assertEquals("00word", ContainerTools.normalizeSlug("00word"));
     }
 }

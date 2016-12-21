@@ -46,9 +46,9 @@ class Semver {
      * 0 both are equal
      * 1 v1 is greather than v2
      *
-     * @param v1
-     * @param v2
-     * @return
+     * @param v1 the first string to compare
+     * @param v2 the second string to compare
+     * @return the comparison result
      */
     public static final int compare(String v1, String v2) {
         Version ver1 = new Version(v1);
@@ -79,8 +79,8 @@ class Semver {
 
         /**
          * Returns the value at the given semver index
-         * @param index
-         * @return
+         * @param index the position in the version
+         * @return the integer value of the version position
          */
         public int get(int index) {
             if(index >= 0 && index < slices.length) {
@@ -92,9 +92,9 @@ class Semver {
         }
 
         /**
-         * Checks if the value at the index is an asterik (wild card)
-         * @param index
-         * @return
+         * Checks if the value at the index is an asterisk (wild card)
+         * @param index the position in the version
+         * @return true if the value is a wildcard
          */
         public boolean isWild(int index) {
             if(index >= 0 && index < slices.length) {
@@ -105,8 +105,8 @@ class Semver {
 
         /**
          * Removes all non-numeric characters except for an asterisk.
-         * @param val
-         * @return
+         * @param val the value to be cleaned
+         * @return a cleaned value
          */
         private String clean(String val) {
             String cleaned = val.replaceAll("[^\\d\\*]", "").trim();

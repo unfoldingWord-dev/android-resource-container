@@ -138,9 +138,10 @@ public class ContainerTools {
                     JSONObject chapter = json.getJSONArray("chapters").getJSONObject(c);
                     Map chapterConfig = new HashMap();
                     Map chapterTOC = new HashMap();
-                    chapterTOC.put("chapter", chapter.getString("number"));
+                    String chapterNumber = normalizeSlug(chapter.getString("number"));
+                    chapterTOC.put("chapter", chapterNumber);
                     chapterTOC.put("chunks", new ArrayList());
-                    File chapterDir = new File(contentDir, chapter.getString("number"));
+                    File chapterDir = new File(contentDir, chapterNumber);
                     chapterDir.mkdirs();
 
                     // chapter title
@@ -148,14 +149,14 @@ public class ContainerTools {
                     if(chapter.has("title") && !chapter.getString("title").isEmpty()) {
                         FileUtil.writeStringToFile(new File(chapterDir, "title." + chunkExt), chapter.getString("title"));
                     } else {
-                        String title = localizeChapterTitle(language.getString("slug"), chapter.getString("number"));
+                        String title = localizeChapterTitle(language.getString("slug"), chapterNumber);
                         FileUtil.writeStringToFile(new File(chapterDir, "title." + chunkExt), title);
                     }
 
                     // frames
                     for(int f = 0; f < chapter.getJSONArray("frames").length(); f ++) {
                         JSONObject frame = chapter.getJSONArray("frames").getJSONObject(f);
-                        String frameSlug = frame.getString("id").split("-")[1].trim();
+                        String frameSlug = normalizeSlug(frame.getString("id").split("-")[1].trim());
                         if(frameSlug.equals("00")) {
                             // fix for chunk 00.txt bug
                             Pattern versePattern = Pattern.compile("/<verse\\s+number=\"(\\d+(-\\d+)?)\"\\s+style=\"v\"\\s*\\/>/");
@@ -163,7 +164,7 @@ public class ContainerTools {
                             if(match.matches()) {
                                 String firstVerseRange = match.group(3);
                                 // TRICKY: verses can be num-num
-                                frameSlug = firstVerseRange.split("-")[0];
+                                frameSlug = normalizeSlug(firstVerseRange.split("-")[0]);
                             }
                         }
 
@@ -175,6 +176,7 @@ public class ContainerTools {
                         // TODO: 9/13/16 add questions, notes, and images to the config for the chunk
                         if(props.has("tw_assignments")) {
                             try {
+                                // TRICKY: we use the un-normalized slug here so we don't break word assignments
                                 JSONArray slugs = props.getJSONObject("tw_assignments").getJSONObject(chapter.getString("number")).getJSONArray(frameSlug);
                                 for(int s = 0; s < slugs.length(); s ++) {
                                     words.add(slugs.get(s));
@@ -207,7 +209,7 @@ public class ContainerTools {
                         FileUtil.writeStringToFile(new File(chapterDir, "title." + chunkExt), chapter.getString("title"));
                     }
                     if(chapterConfig.size() > 0) {
-                        ((Map)config.get("content")).put(chapter.getString("number"), chapterConfig);
+                        ((Map)config.get("content")).put(chapterNumber, chapterConfig);
                     }
                     toc.add(chapterTOC);
                 }
@@ -219,11 +221,13 @@ public class ContainerTools {
                         if(!chunk.has("tn")) continue;
                         String[] slugs = chunk.getString("id").split("-");
                         if(slugs.length != 2) continue;
+                        String chapterSlug = normalizeSlug(slugs[0]);
+                        String chunkSlug = normalizeSlug(slugs[1]);
 
                         // fix for chunk 00.txt bug
-                        if(slugs[1].trim().equals("00")) continue;
+                        if(chunkSlug.equals("00")) continue;
 
-                        File chapterDir = new File(contentDir, slugs[0]);
+                        File chapterDir = new File(contentDir, chapterSlug);
                         chapterDir.mkdirs();
                         String body = "";
                         for(int n = 0; n < chunk.getJSONArray("tn").length(); n ++) {
@@ -231,14 +235,15 @@ public class ContainerTools {
                             body += "\n\n#" + note.getString("ref") + "\n\n" + note.getString("text");
                         }
                         if(!body.trim().isEmpty()) {
-                            FileUtil.writeStringToFile(new File(chapterDir, slugs[1] + "." + chunkExt), body.trim());
+                            FileUtil.writeStringToFile(new File(chapterDir, chunkSlug + "." + chunkExt), body.trim());
                         }
                     }
                 } else if(resource.getString("slug").equals("tq")) {
                     for(int c = 0; c < json.length(); c ++) {
                         JSONObject chapter = json.getJSONObject(c);
                         if(!chapter.has("cq")) continue;
-                        File chapterDir = new File(contentDir, chapter.getString("id"));
+                        String chapterSlug = normalizeSlug(chapter.getString("id"));
+                        File chapterDir = new File(contentDir, chapterSlug);
                         chapterDir.mkdirs();
                         Map<String, String> normalizedChunks = new HashMap();
                         for(int q = 0; q < chapter.getJSONArray("cq").length(); q ++) {
@@ -247,9 +252,10 @@ public class ContainerTools {
                             for(int s = 0; s < question.getJSONArray("ref").length(); s ++) {
                                 String[] slugs = question.getJSONArray("ref").getString(s).split("-");
                                 if(slugs.length != 2) continue;
+                                String chunkSlug = normalizeSlug(slugs[1]);
 
-                                String old = normalizedChunks.get(slugs[1]);
-                                normalizedChunks.put(slugs[1], (old != null ? old : "") + text);
+                                String old = normalizedChunks.get(chunkSlug);
+                                normalizedChunks.put(chunkSlug, (old != null ? old : "") + text);
                             }
                         }
                         for(String key:normalizedChunks.keySet()) {
@@ -425,6 +431,50 @@ public class ContainerTools {
         } catch (NumberFormatException e) {
             return title.replace("%", chapterNumber);
         }
+    }
+
+    /**
+     * Pads a slug to 2 significant digits.
+     * Examples:
+     * '1'    -> '01'
+     * '001'  -> '01'
+     * '12'   -> '12'
+     * '123'  -> '123'
+     * '0123' -> '123'
+     * Words are not padded:
+     * 'a' -> 'a'
+     * '0word' -> '0word'
+     * And as a matter of consistency:
+     * '0'  -> '00'
+     * '00' -> '00'
+     *
+     * @param slug the slug to be normalized
+     * @return the normalized slug
+     */
+    public static String normalizeSlug(String slug) throws Exception {
+        if(slug == null || slug.isEmpty()) throw new Exception("slug cannot be an empty string");
+        if(!isInteger(slug)) return slug;
+        slug = slug.replaceAll("^(0+)", "").trim();
+        while(slug.length() < 2) {
+            slug = "0" + slug;
+        }
+        return slug;
+    }
+
+    /**
+     * Checks if a string is an integer
+     * @param s
+     * @return
+     */
+    protected static boolean isInteger(String s) {
+        try {
+            Integer.parseInt(s);
+        } catch(NumberFormatException e) {
+            return false;
+        } catch(NullPointerException e) {
+            return false;
+        }
+        return true;
     }
 
     /**
