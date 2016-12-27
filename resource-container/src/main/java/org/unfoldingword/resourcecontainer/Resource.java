@@ -73,6 +73,18 @@ public class Resource {
     }
 
     /**
+     * Checks if this resource contains a format that was manually imported
+     *
+     * @return true if an imported format was found
+     */
+    public boolean hasImportedFormat() {
+        for(Format f:formats) {
+            if(f.imported) return true;
+        }
+        return false;
+    }
+
+    /**
      * Adds a format to this resource
      * @param format e.g. a binary format
      */
