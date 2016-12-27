@@ -143,12 +143,22 @@ public class Resource {
         public String mimeType;
         public int modifiedAt;
         public String url;
+        public boolean imported;
 
-        public Format(String packageVersion, String mimeType, int modifiedAt, String url) {
+        /**
+         *
+         * @param packageVersion the version of this format.
+         * @param mimeType the mime type of this format
+         * @param modifiedAt the last modified date of this format
+         * @param url the url where this format can be downloaded
+         * @param imported indicates if this format was manually imported
+         */
+        public Format(String packageVersion, String mimeType, int modifiedAt, String url, boolean imported) {
             this.packageVersion = packageVersion;
             this.mimeType = mimeType;
             this.modifiedAt = modifiedAt;
             this.url = url;
+            this.imported = imported;
         }
     }
 }
