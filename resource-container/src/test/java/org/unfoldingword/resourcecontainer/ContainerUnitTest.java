@@ -317,6 +317,8 @@ public class ContainerUnitTest {
         assertEquals(EQUAL, Semver.compare("10.0.0", "v10.0.0"));
         assertEquals(EQUAL, Semver.compare("10.*.1", "10.9.1"));
         assertEquals(EQUAL, Semver.compare("0.8.1", "0.8.1"));
+        assertEquals(EQUAL, Semver.compare("*", "0.8.1"));
+        assertEquals(EQUAL, Semver.compare("0.8.1", "*"));
 
         assertEquals(GREATER_THAN, Semver.compare("10.0.0", "1.0.0"));
         assertEquals(GREATER_THAN, Semver.compare("10.1.0", "10.0.0"));

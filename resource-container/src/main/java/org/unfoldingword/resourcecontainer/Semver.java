@@ -97,10 +97,14 @@ class Semver {
          * @return true if the value is a wildcard
          */
         public boolean isWild(int index) {
-            if(index >= 0 && index < slices.length) {
+            if(index >= slices.length) index = slices.length -1;
+            if(index < 0) index = 0;
+
+            if(slices.length > 0) {
                 return clean(slices[index]).equals("*");
+            } else {
+                return false;
             }
-            return false;
         }
 
         /**
