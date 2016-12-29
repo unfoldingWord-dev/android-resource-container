@@ -44,7 +44,7 @@ class Semver {
      * Compares two version strings.
      * -1 v1 is less than v2
      * 0 both are equal
-     * 1 v1 is greather than v2
+     * 1 v1 is greater than v2
      *
      * @param v1 the first string to compare
      * @param v2 the second string to compare
