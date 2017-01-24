@@ -1,6 +1,5 @@
 package org.unfoldingword.resourcecontainer;
 
-import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
@@ -14,7 +13,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
@@ -28,12 +26,6 @@ import java.util.Map;
  * Represents an instance of a resource container.
  */
 public class ResourceContainer {
-    public static final String version = "0.1";
-    public static final String slugDelimiter = "_";
-    public static final String fileExtension = "tsrc";
-    public static final String baseMimeType = "application/tsrc";
-
-    private static final String CONTENT_DIR = "content";
 
     /**
      * Returns the path to the resource container directory
@@ -44,236 +36,96 @@ public class ResourceContainer {
      * Returns the resource container package information.
      * This is the package.json file
      */
-    public final JSONObject info;
-
-    /**
-     * Returns the resource container data configuration.
-     * This is the config.yml file under the content/ directory
-     */
-    public final Map config;
-
-    /**
-     * Returns the table of contents.
-     * This is the toc.yml file under the content/ directory.
-     * This can be a list or a map.
-     */
-    public final Object toc;
-
-    /**
-     * Returns the slug of the resource container
-     */
-    public final String slug;
-
-    /**
-     * The language represented in this resource container
-     */
-    public final Language language;
-
-    /**
-     * The project represented in this resource container
-     */
-    public final Project project;
-
-    /**
-     * The resource represented in this resource container
-     */
-    public final Resource resource;
-
-    /**
-     * The time this resource container was last modified
-     */
-    public final int modifiedAt;
-
-    /**
-     * The mimetype of the content within this resource container
-     */
-    public final String contentMimeType;
+    public Map manifest = null;
 
     /**
      * Instantiates a new resource container object
-     * @param containerDirectory the directory of the resource container
-     * @param containerInfo the resource container info (package.json)
-     * @throws JSONException
+     *
+     * @param dir the directory of the resource container
+     * @throws Exception
      */
-    private ResourceContainer(File containerDirectory, JSONObject containerInfo) throws JSONException {
-        this.path = containerDirectory;
-        this.info = containerInfo;
-        this.modifiedAt = info.getInt("modified_at");
-        this.contentMimeType = info.getString("content_mime_type");
-        this.language = Language.fromJSON(containerInfo.getJSONObject("language"));
-        this.project = Project.fromJSON(containerInfo.getJSONObject("project"));
-        this.project.languageSlug = language.slug;
-        this.resource = Resource.fromJSON(containerInfo.getJSONObject("resource"));
-        this.resource.projectSlug = project.slug;
-        this.slug = ContainerTools.makeSlug(language.slug, project.slug, resource.slug);
+    public ResourceContainer(File dir) throws Exception {
+        this.path = dir;
 
-        // load config
-        File configFile = new File(containerDirectory, CONTENT_DIR + "/config.yml");
-        Map tempConfig = null;
-        try {
-            YamlReader reader = new YamlReader(new FileReader(configFile));
-            Object object = reader.read();
-            tempConfig = (Map)object;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (YamlException e) {
-            e.printStackTrace();
-        } finally {
-            if(tempConfig == null) tempConfig = new HashMap();
+        File manifestFile = new File(dir, "manifest.yaml");
+        if(manifestFile.exists()) {
+            YamlReader reader = new YamlReader(new FileReader(manifestFile));
+            this.manifest = (HashMap)reader.read();
         }
-        this.config = tempConfig;
+    }
 
-        // load toc
-        File tocFile = new File(containerDirectory, CONTENT_DIR + "/toc.yml");
-        Object tempToc = null;
-        try {
-            YamlReader reader = new YamlReader(new FileReader(tocFile));
-            tempToc = reader.read();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (YamlException e) {
-            e.printStackTrace();
-        } finally {
-            if(tempToc == null) tempToc = new HashMap();
-        }
-        this.toc = tempToc;
+    public Language language() {
+        return  null; // TODO: 1/24/17 return the language
+    }
+
+    public Resource resource () {
+        return null; // TODO: return the resource
     }
 
     /**
-     * Loads a resource container from the disk.
-     * Rejects with an error if the container is not supported. Or does not exist, or is not a directory.
-     * @param containerDirectory
+     * Retrieves the project from the RC
+     *
+     * @return the project
      * @throws Exception
-     * @return
      */
-    public static ResourceContainer load(File containerDirectory) throws Exception {
-        if(!containerDirectory.exists()) throw new Exception("The resource container does not exist");
-        if(!containerDirectory.isDirectory()) throw new Exception("Not an open resource container");
-        File packageFile = new File(containerDirectory, "package.json");
-        if(!packageFile.exists()) throw new Exception("Not a resource container");
-        JSONObject packageJson = new JSONObject(FileUtil.readFileToString(packageFile));
-        if(!packageJson.has("package_version")) throw new Exception("Not a resource container");
-        if(Semver.gt(packageJson.getString("package_version"), ResourceContainer.version)) throw new Exception("Unsupported container version");
-        if(Semver.lt(packageJson.getString("package_version"), ResourceContainer.version)) throw new Exception("Outdated container version");
-
-        return new ResourceContainer(containerDirectory, packageJson);
+    public Project project() throws Exception {
+        return project(null);
     }
 
     /**
-     * Creates a new resource container.
-     * Rejects with an error if the container exists.
-     * @param containerDirectory
-     * @param opts
+     * Retrieves a project from the RC.
+     *
+     * @param identifier the project to be retrieved. This can be null if there is only one project
+     * @return the project
      * @throws Exception
-     * @return
      */
-    public static ResourceContainer make(File containerDirectory, JSONObject opts) throws Exception {
-        if(containerDirectory.exists()) throw new Exception("Resource container directory already exists");
-        // TODO: finish this
-        throw new Exception("Not implemented yet!");
-    }
+    public Project project(String identifier) throws Exception {
+        if(!this.manifest.containsKey("projects") || ((List)this.manifest.get("projects")).size() == 0) return null;
 
-
-    /**
-     * Opens an archived resource container.
-     * If the container is already opened it will be loaded
-     * @param containerArchive
-     * @param containerDirectory
-     * @throws Exception
-     * @return
-     */
-    public static ResourceContainer open(File containerArchive, File containerDirectory) throws Exception {
-        if(containerDirectory.exists()) return load(containerDirectory);
-
-        if(!containerArchive.exists()) throw new Exception("Missing resource container");
-        File tempFile = new File(containerArchive + ".tmp.tar");
-        FileOutputStream out = null;
-        BZip2CompressorInputStream bzIn = null;
-
-        // decompress bzip2
-        try {
-            FileInputStream fin = new FileInputStream(containerArchive);
-            BufferedInputStream in = new BufferedInputStream(fin);
-            out = new FileOutputStream(tempFile);
-            bzIn = new BZip2CompressorInputStream(in);
-            int n;
-            final byte[] buffer = new byte[2048];
-            while ((n = bzIn.read(buffer)) != -1) {
-                out.write(buffer, 0, n);
+        if(identifier != null && !identifier.isEmpty()) {
+            for(HashMap<String, String> p:(List<HashMap>)this.manifest.get("projects")) {
+                if(p.containsKey("identifier") && p.get("identifier").equals(identifier)) {
+                    // TODO: return project
+                    return null;
+                }
             }
-        } catch (Exception e) {
-            FileUtil.deleteQuietly(tempFile);
-            throw e;
-        } finally {
-            if(out != null) out.close();
-            if(bzIn != null) bzIn.close();
+        } else {
+            if(((List)this.manifest.get("projects")).size() == 1) {
+                HashMap p = ((List<HashMap>)this.manifest.get("projects")).get(0);
+                // TODO: 1/24/17 return project
+                return null;
+            } else if(((List)this.manifest.get("projects")).size() > 1) {
+                throw new Exception("Multiple projects found. Specify the project identifier.");
+            }
         }
-
-        // un-pack
-        FileInputStream fin = new FileInputStream(tempFile);
-        BufferedInputStream in = new BufferedInputStream(fin);
-        TarInputStream tin = new TarInputStream(in);
-        try {
-            containerDirectory.mkdirs();
-            TarUtil.untar(tin, containerDirectory.getAbsolutePath());
-        } catch (Exception e) {
-            FileUtil.deleteQuietly(containerDirectory);
-            throw e;
-        } finally {
-            tin.close();
-            FileUtil.deleteQuietly(tempFile);
-        }
-
-        return load(containerDirectory);
+        return null;
     }
 
     /**
-     * Closes (archives) a resource container.
-     * @param containerDirectory
-     * @return the path to the resource container archive
-     * @throws Exception
+     * Returns the number of projects contained in this RC.
+     *
+     * @return the project count
      */
-    public static File close(File containerDirectory) throws Exception {
-        if(!containerDirectory.exists()) throw new Exception("Missing resource container");
-        // pack
-        File tempFile = new File(containerDirectory.getAbsolutePath() + ".tmp.tar");
-        TarOutputStream tout = new TarOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)));
-        try {
-            TarUtil.tar(null, containerDirectory.getAbsolutePath(), tout);
-        } catch(Exception e) {
-            FileUtil.deleteQuietly(tempFile);
-            throw e;
-        } finally {
-            tout.close();
+    public int projectCount() {
+        if(this.manifest.containsKey("projects")) {
+            return ((List) this.manifest.get("projects")).size();
+        } else {
+            return 0;
         }
+    }
 
-        // compress
-        File archive = new File(containerDirectory.getAbsolutePath() + "." + ResourceContainer.fileExtension);
-        BZip2CompressorOutputStream bzOut = null;
-        BufferedInputStream in = null;
-
-        try {
-            FileInputStream fin = new FileInputStream(tempFile);
-            in = new BufferedInputStream(fin);
-            FileOutputStream out = new FileOutputStream(archive);
-            bzOut = new BZip2CompressorOutputStream(out);
-            int n;
-            byte buffer[] = new byte[2048];
-            while ((n = in.read(buffer)) != -1) {
-                bzOut.write(buffer, 0, n);
-            }
-            bzOut.close();
-            in.close();
-        } catch(Exception e) {
-            FileUtil.deleteQuietly(archive);
-            throw e;
-        } finally {
-            if(bzOut != null) bzOut.close();
-            if(in != null) in.close();
-            FileUtil.deleteQuietly(tempFile);
+    /**
+     * Returns the version of the RC spec used in this container.
+     * This will strip off the 'rc' prefix.
+     *
+     * @return the RC version e.g. '0.2'
+     */
+    public String conformsTo() {
+        if(this.manifest.containsKey("dublin_core") && this.manifest.get("dublin_core") instanceof HashMap) {
+            HashMap<String, Object> dc = (HashMap)this.manifest.get("dublin_core");
+            if(dc.containsKey("conformsto")) return ((String)dc.get("conformsto")).replaceAll("^rc", "");
         }
-
-        return archive;
+        return null;
     }
 
     /**
@@ -329,24 +181,20 @@ public class ResourceContainer {
 
     /**
      * Returns the file extension to use for content files (chunks)
-     * @return
+     * @return the extension name
      */
     private String chunkExt() {
         String defaultExt = "txt";
-        try {
-            switch (info.getString("content_mime_type")) {
-                case "text/usx":
-                    return "usx";
-                case "text/usfm":
-                    return "usfm";
-                case "text/markdown":
-                    return "md";
-                default:
-                    // unknown format
-                    return defaultExt;
-            }
-        } catch (JSONException e) {
-            return defaultExt;
+        switch ((String)manifest.get("content_mime_type")) {
+            case "text/usx":
+                return "usx";
+            case "text/usfm":
+                return "usfm";
+            case "text/markdown":
+                return "md";
+            default:
+                // unknown format
+                return defaultExt;
         }
     }
 }

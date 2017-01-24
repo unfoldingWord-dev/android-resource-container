@@ -33,7 +33,7 @@ public class ContainerUnitTest {
         assertEquals(4, container.chapters().length);
         assertEquals(8, container.chunks("01").length);
         assertEquals("Titus", container.readChunk("front", "title").trim());
-        assertEquals(container.info.getString("package_version"), ResourceContainer.version);
+        assertEquals(container.manifest.getString("package_version"), ResourceContainer.version);
         assertNotNull(container.toc);
         assertNotNull(container.config);
     }
@@ -67,7 +67,7 @@ public class ContainerUnitTest {
         assertTrue(dir.exists());
         assertNotNull(container.toc);
         assertNotNull(container.config);
-        assertEquals(container.info.getString("package_version"), ResourceContainer.version);
+        assertEquals(container.manifest.getString("package_version"), ResourceContainer.version);
     }
     @Test
     public void openResourceContainerArchive() throws Exception {
@@ -82,7 +82,7 @@ public class ContainerUnitTest {
         assertTrue(dir.exists());
         assertNotNull(container.toc);
         assertNotNull(container.config);
-        assertEquals(container.info.getString("package_version"), ResourceContainer.version);
+        assertEquals(container.manifest.getString("package_version"), ResourceContainer.version);
     }
     @Test
     public void openResourceContainerFolder() throws Exception {
@@ -95,7 +95,7 @@ public class ContainerUnitTest {
         assertTrue(dir.exists());
         assertNotNull(container.toc);
         assertNotNull(container.config);
-        assertEquals(container.info.getString("package_version"), ResourceContainer.version);
+        assertEquals(container.manifest.getString("package_version"), ResourceContainer.version);
     }
     @Test
     public void failOpeningInvalidContainer() throws Exception {
