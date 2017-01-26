@@ -102,11 +102,17 @@ public class ContainerUnitTest {
 
         ResourceContainerFactory factory = new ResourceContainerFactory();
         HashMap<String, Object> manifest = new HashMap<>();
+        HashMap<String, String> language = new HashMap<>();
+        language.put("identifier", "en");
+        language.put("title", "English");
+        language.put("direction", "ltr");
+
         HashMap<String, Object> dublinCore = new HashMap<>();
         dublinCore.put("type", "book");
         dublinCore.put("format", "text/usfm");
         dublinCore.put("identifier", "en-me");
         dublinCore.put("rights", "CC BY-SA 4.0");
+        dublinCore.put("language", language);
         manifest.put("dublin_core", dublinCore);
         ResourceContainer container = factory.create(containerDir, manifest);
 
