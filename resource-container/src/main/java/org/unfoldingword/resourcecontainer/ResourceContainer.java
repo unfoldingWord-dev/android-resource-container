@@ -2,18 +2,7 @@ package org.unfoldingword.resourcecontainer;
 
 import com.esotericsoftware.yamlbeans.YamlReader;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.unfoldingword.tools.jtar.TarInputStream;
-import org.unfoldingword.tools.jtar.TarOutputStream;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -21,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents an instance of a resource container.
@@ -36,7 +26,7 @@ public class ResourceContainer {
      * Returns the resource container package information.
      * This is the package.json file
      */
-    public Map manifest = null;
+    public MapReader manifest = null;
 
     /**
      * Instantiates a new resource container object
@@ -50,16 +40,29 @@ public class ResourceContainer {
         File manifestFile = new File(dir, "manifest.yaml");
         if(manifestFile.exists()) {
             YamlReader reader = new YamlReader(new FileReader(manifestFile));
-            this.manifest = (HashMap)reader.read();
+            this.manifest = new MapReader(reader.read());
         }
     }
 
     public Language language() {
-        return  null; // TODO: 1/24/17 return the language
+        Object language = this.manifest.get("dublin_core").get("language");
+        if(language == null) return null;
+
+        MapReader reader = new MapReader(language);
+        String slug = (String)reader.get("identifier").value();
+        String title = (String)reader.get("title").value();
+        String direction = (String)reader.get("direction").value();
+        return new Language(slug, title, direction);
     }
 
     public Resource resource () {
-        return null; // TODO: return the resource
+        String slug = (String)this.manifest.get("dublin_core").get("identifier").value();
+        String title = (String)this.manifest.get("dublin_core").get("title").value();
+        String type = (String)this.manifest.get("dublin_core").get("type").value();
+        String checkingLevel = (String)this.manifest.get("checking").get("checking_level").value();
+        String version = (String)this.manifest.get("dublin_core").get("version").value();
+        // TODO: 1/26/17 the translate mode is deprecated
+        return new Resource(slug, title, type, null, checkingLevel, version);
     }
 
     /**
@@ -80,24 +83,35 @@ public class ResourceContainer {
      * @throws Exception
      */
     public Project project(String identifier) throws Exception {
-        if(!this.manifest.containsKey("projects") || ((List)this.manifest.get("projects")).size() == 0) return null;
+        if(this.manifest.get("projects").size() == 0) return null;
 
         if(identifier != null && !identifier.isEmpty()) {
-            for(HashMap<String, String> p:(List<HashMap>)this.manifest.get("projects")) {
-                if(p.containsKey("identifier") && p.get("identifier").equals(identifier)) {
-                    // TODO: return project
-                    return null;
+            // look up project
+            for(Object project:(List)this.manifest.get("projects")) {
+                MapReader p = new MapReader(project);
+                if(p.get("identifier").value().equals(identifier)) {
+                    String slug = (String)p.get("identifier").value();
+                    String name = (String)p.get("title").value();
+                    Integer sort = 0;
+                    if(p.get("sort").value() instanceof Integer) {
+                        sort = (Integer)p.get("sort").value();
+                    }
+                    return new Project(slug, name, sort);
                 }
             }
-        } else {
-            if(((List)this.manifest.get("projects")).size() == 1) {
-                HashMap p = ((List<HashMap>)this.manifest.get("projects")).get(0);
-                // TODO: 1/24/17 return project
-                return null;
-            } else if(((List)this.manifest.get("projects")).size() > 1) {
-                throw new Exception("Multiple projects found. Specify the project identifier.");
+        } else if(this.manifest.get("projects").size() == 1) {
+            // return only project
+            String slug = (String)this.manifest.get("projects").get(0).get("identifier").value();
+            String name = (String)this.manifest.get("projects").get(0).get("title").value();
+            Integer sort = 0;
+            if(this.manifest.get("projects").get(0).get("sort").value() instanceof Integer) {
+                sort = (Integer)this.manifest.get("projects").get(0).get("sort").value();
             }
+            return new Project(slug, name, sort);
+        } else if(this.manifest.get("projects").size() > 1) {
+            throw new Exception("Multiple projects found. Specify the project identifier.");
         }
+
         return null;
     }
 
@@ -107,11 +121,7 @@ public class ResourceContainer {
      * @return the project count
      */
     public int projectCount() {
-        if(this.manifest.containsKey("projects")) {
-            return ((List) this.manifest.get("projects")).size();
-        } else {
-            return 0;
-        }
+        return this.manifest.get("projects").size();
     }
 
     /**
@@ -121,9 +131,9 @@ public class ResourceContainer {
      * @return the RC version e.g. '0.2'
      */
     public String conformsTo() {
-        if(this.manifest.containsKey("dublin_core") && this.manifest.get("dublin_core") instanceof HashMap) {
-            HashMap<String, Object> dc = (HashMap)this.manifest.get("dublin_core");
-            if(dc.containsKey("conformsto")) return ((String)dc.get("conformsto")).replaceAll("^rc", "");
+        String value = (String)this.manifest.get("dublin_core").get("conformsto").value();
+        if(value != null) {
+            return value.replaceAll("^rc", "");
         }
         return null;
     }
@@ -132,7 +142,7 @@ public class ResourceContainer {
      * Returns an un-ordered list of chapter slugs in this resource container
      * @return
      */
-    public String[] chapters() {
+    public String[] chapters(String projectIdentifier) {
         String[] chapters = (new File(path, CONTENT_DIR)).list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
