@@ -123,17 +123,67 @@ public class ContainerUnitTest {
 
     @Test
     public void failOpeningOldRC() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("old_rc");
+        File containerDir = new File(resource.getPath());
 
+        ResourceContainerFactory factory = new ResourceContainerFactory();
+        try {
+            ResourceContainer container = factory.load(containerDir);
+            assertNull(container);
+        } catch (Exception e) {
+            assertEquals("Outdated resource container version. Found 0.1 but expected " + ResourceContainerFactory.conformsTo, e.getMessage());
+        }
     }
 
     @Test
     public void failOpeningUnsupportedRC() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("unsupported_rc");
+        File containerDir = new File(resource.getPath());
 
+        ResourceContainerFactory factory = new ResourceContainerFactory();
+        try {
+            ResourceContainer container = factory.load(containerDir);
+            assertNull(container);
+        } catch (Exception e) {
+            assertEquals("Unsupported resource container version. Found 9999990.1 but expected " + ResourceContainerFactory.conformsTo, e.getMessage());
+        }
     }
 
     @Test
     public void throwErrorWhenNotSpecifyingProjectInMultiProjectRC() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("valid_multi_book_rc");
+        File containerDir = new File(resource.getPath());
 
+        ResourceContainerFactory factory = new ResourceContainerFactory();
+        ResourceContainer container = factory.load(containerDir);
+
+        try {
+            container.chapters();
+            assertTrue(false);
+        } catch (Exception e) {
+            assertEquals("Multiple projects found. Specify the project identifier.", e.getMessage());
+        }
+        try {
+            container.chunks("01");
+            assertTrue(false);
+        } catch (Exception e) {
+            assertEquals("Multiple projects found. Specify the project identifier.", e.getMessage());
+        }
+        try {
+            container.readChunk("01", "01");
+            assertTrue(false);
+        } catch (Exception e) {
+            assertEquals("Multiple projects found. Specify the project identifier.", e.getMessage());
+        }
+        try {
+            container.writeChunk("01", "01", "test");
+            assertTrue(false);
+        } catch (Exception e) {
+            assertEquals("Multiple projects found. Specify the project identifier.", e.getMessage());
+        }
     }
 
     @Test
