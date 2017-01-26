@@ -8,6 +8,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -36,27 +37,82 @@ public class ContainerUnitTest {
 
     @Test
     public void loadMultiBookRC() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("valid_multi_book_rc");
+        File containerDir = new File(resource.getPath());
 
+        ResourceContainerFactory factory = new ResourceContainerFactory();
+        ResourceContainer container = factory.load(containerDir);
+
+        assertNotNull(container);
+
+        assertEquals(4, container.chapters("tit").length);
+        assertEquals(8, container.chunks("tit", "01").length);
+        assertEquals("Titus", container.readChunk("tit", "front", "title").trim());
+
+        assertEquals(4, container.chapters("gen").length);
+        assertEquals(8, container.chunks("gen", "01").length);
+        assertEquals("Genesis", container.readChunk("gen", "front", "title").trim());
     }
 
     @Test
     public void failToLoadMissingRC() throws Exception {
+        File containerDir = new File("missing_rc");
 
+        ResourceContainerFactory factory = new ResourceContainerFactory();
+        try {
+            ResourceContainer container = factory.load(containerDir);
+            assertNull(container);
+        } catch (Exception e) {
+            assertEquals("Not a resource container", e.getMessage());
+        }
     }
 
     @Test
     public void loadMissingRCWhenNotInStrictMode() throws Exception {
+        File containerDir = new File("missing_rc");
 
+        ResourceContainerFactory factory = new ResourceContainerFactory();
+        ResourceContainer container = factory.load(containerDir, false);
+        assertNotNull(container);
     }
 
     @Test
     public void updateRC() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("valid_single_book_rc");
+        File containerDir = new File(resource.getPath());
 
+        ResourceContainerFactory factory = new ResourceContainerFactory();
+        ResourceContainer container = factory.load(containerDir);
+
+        assertNotNull(container);
+        assertEquals("Titus", container.readChunk("front", "title").trim());
+        container.writeChunk("front", "title", "Titus Updated");
+        container.writeChunk("80", "12", "What is this?");
+        assertEquals("Titus Updated", container.readChunk("front", "title").trim());
+        assertEquals("What is this?", container.readChunk("80", "12").trim());
     }
 
     @Test
     public void createNewRC() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("valid_single_book_rc");
+        File containerDir = new File(new File(resource.getPath()).getParentFile(), "new_rc");
 
+        ResourceContainerFactory factory = new ResourceContainerFactory();
+        HashMap<String, Object> manifest = new HashMap<>();
+        HashMap<String, Object> dublinCore = new HashMap<>();
+        dublinCore.put("type", "book");
+        dublinCore.put("format", "text/usfm");
+        dublinCore.put("identifier", "en-me");
+        dublinCore.put("rights", "CC BY-SA 4.0");
+        manifest.put("dublin_core", dublinCore);
+        ResourceContainer container = factory.create(containerDir, manifest);
+
+        assertNotNull(container);
+        assertEquals(factory.conformsTo, container.conformsTo());
+        assertEquals("book", container.type());
     }
 
     @Test

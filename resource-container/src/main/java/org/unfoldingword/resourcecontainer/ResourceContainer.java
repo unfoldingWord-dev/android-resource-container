@@ -5,12 +5,9 @@ import com.esotericsoftware.yamlbeans.YamlReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * Represents an instance of a resource container.
@@ -41,6 +38,8 @@ public class ResourceContainer {
         if(manifestFile.exists()) {
             YamlReader reader = new YamlReader(new FileReader(manifestFile));
             this.manifest = new MapReader(reader.read());
+        } else {
+            this.manifest = new MapReader(new HashMap<>());
         }
     }
 
@@ -87,29 +86,14 @@ public class ResourceContainer {
 
         if(identifier != null && !identifier.isEmpty()) {
             // look up project
-            for(Object project:(List)this.manifest.get("projects")) {
+            for(Object project:(List)this.manifest.get("projects").value()) {
                 MapReader p = new MapReader(project);
                 if(p.get("identifier").value().equals(identifier)) {
                     return p.value();
-//                    String slug = (String)p.get("identifier").value();
-//                    String name = (String)p.get("title").value();
-//                    Integer sort = 0;
-//                    if(p.get("sort").value() instanceof Integer) {
-//                        sort = (Integer)p.get("sort").value();
-//                    }
-//                    return new Project(slug, name, sort);
                 }
             }
         } else if(this.manifest.get("projects").size() == 1) {
             return this.manifest.get("projects").get(0).value();
-//            // return only project
-//            String slug = (String)this.manifest.get("projects").get(0).get("identifier").value();
-//            String name = (String)this.manifest.get("projects").get(0).get("title").value();
-//            Integer sort = 0;
-//            if(this.manifest.get("projects").get(0).get("sort").value() instanceof Integer) {
-//                sort = (Integer)this.manifest.get("projects").get(0).get("sort").value();
-//            }
-//            return new Project(slug, name, sort);
         } else if(this.manifest.get("projects").size() > 1) {
             throw new Exception("Multiple projects found. Specify the project identifier.");
         }
@@ -235,6 +219,39 @@ public class ResourceContainer {
     }
 
     /**
+     * Writes content to a chunk.
+     * The path will be created if it does not already exist.
+     *
+     * @param chapterIdentifier the chapter who's chunk will be written to
+     * @param chunkIdentifier the chunk that will be created
+     * @param content the content to be written to the chunk
+     * @throws Exception
+     */
+    public void writeChunk(String chapterIdentifier, String chunkIdentifier, String content) throws Exception {
+        writeChunk(null, chapterIdentifier, chunkIdentifier, content);
+    }
+
+    /**
+     * Writes content to a chunk.
+     * The path will be created if it does not already exist.
+     *
+     * @param projectIdentifier the project who's chunk will be written to
+     * @param chapterIdentifier the chapter who's chunk will be written to
+     * @param chunkIdentifier the chunk that will be created
+     * @param content the content to be written to the chunk
+     * @throws Exception
+     */
+    public void writeChunk(String projectIdentifier, String chapterIdentifier, String chunkIdentifier, String content) throws Exception {
+        Object p = project(projectIdentifier);
+        if(p == null) return;
+
+        MapReader pReader = new MapReader(p);
+        File chunkFile = new File(new File(new File(path, (String)pReader.get("path").value()), chapterIdentifier), chunkIdentifier + "." + chunkExt());
+        chunkFile.getParentFile().mkdirs();
+        FileUtil.writeStringToFile(chunkFile, content);
+    }
+
+    /**
      * Returns the file extension to use for content files (chunks)
      * @return the extension name
      */
@@ -257,5 +274,14 @@ public class ResourceContainer {
                 // unknown format
                 return defaultExt;
         }
+    }
+
+    /**
+     * Convenience method to get the type of the resource container.
+     *
+     * @return the RC type
+     */
+    public String type() {
+        return (String)this.manifest.get("dublin_core").get("type").value();
     }
 }

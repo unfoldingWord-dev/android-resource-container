@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A utility for reading maps and lists without pulling your hair out.
+ * A utility for reading maps without pulling your hair out.
+ * See https://gist.github.com/neutrinog/bb274330b911801a6e210df670bf3ecf
  */
 public class MapReader {
     private final Object map;
