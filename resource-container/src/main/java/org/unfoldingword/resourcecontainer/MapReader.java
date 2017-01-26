@@ -1,31 +1,37 @@
 package org.unfoldingword.resourcecontainer;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
- * A utility for reading maps without pulling your hair out.
+ * A utility for reading maps and lists without pulling your hair out.
  */
 public class MapReader {
-
     private final Object map;
 
     /**
      * The map or value
-     * @param map the map that can be read or any other object as a value
+     * @param obj the object to be read.
      */
-    public MapReader(Object map) {
-        this.map = map;
+    public MapReader(Object obj) {
+        this.map = obj;
     }
 
     /**
-     * Retrieves a value from the map
+     * Resolves a new instance of the reader with the value.
+     *
      * @param key the key to look up
      * @return an instance of the reader with the value
      */
     public MapReader get(Object key) {
-        if(this.map != null && this.map instanceof Map && ((Map)this.map).containsKey(key)) {
-            return new MapReader(((Map)this.map).get("key"));
+        if(this.map instanceof Map && ((Map)this.map).containsKey(key)) {
+            return new MapReader(((Map)this.map).get(key));
+        } else if (key instanceof Integer
+                && this.map instanceof List
+                && (Integer) key >= 0
+                && ((List)this.map).size() > (Integer)key) {
+            return new MapReader(((List)this.map).get((Integer)key));
         } else {
             return new MapReader(null);
         }
@@ -54,5 +60,13 @@ public class MapReader {
         } else {
             return 0;
         }
+    }
+
+    /**
+     * Convenience method for checking of the value/map is null
+     * @return true if the value or map is null
+     */
+    public boolean isNull() {
+        return this.map == null;
     }
 }

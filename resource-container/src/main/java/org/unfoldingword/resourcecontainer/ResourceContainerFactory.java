@@ -28,7 +28,7 @@ public class ResourceContainerFactory {
         ResourceContainer rc = new ResourceContainer(dir);
 
         if(strict) {
-            if(rc.manifest == null || rc.conformsTo() == null) throw new Exception("Not a resource container");
+            if(rc.manifest.isNull() || rc.conformsTo() == null) throw new Exception("Not a resource container");
             if(Semver.gt(rc.conformsTo(), conformsTo)) throw new Exception("Unsupported resource container version. Found " + rc.conformsTo() + " but expected " + conformsTo);
             if(Semver.lt(rc.conformsTo(), conformsTo)) throw new Exception("Outdated resource container version. Found " + rc.conformsTo() + " but expected " + conformsTo);
         }
