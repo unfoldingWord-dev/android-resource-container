@@ -1,5 +1,8 @@
 package org.unfoldingword.resourcecontainer;
 
+import android.util.Log;
+import android.util.TimingLogger;
+
 import org.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +37,23 @@ public class ContainerUnitTest {
         assertEquals(8, container.chunks("01").length);
         assertEquals("Titus", container.readChunk("front", "title").trim());
         assertEquals(container.info.getString("package_version"), ResourceContainer.version);
+        assertNotNull(container.toc);
+        assertNotNull(container.config);
+    }
+    @Test
+    public void loadBigContainer() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("en_psa_ulb");
+        File containerDir = new File(resource.getPath());
+
+        long start = java.lang.System.nanoTime();
+        ResourceContainer container = ResourceContainer.load(containerDir);
+        long end = java.lang.System.nanoTime();
+        long time = (end - start) / 1000 / 1000;
+        Log.d("BigContainerTest", "Execution time: " + time + " ms");
+
+        assertNotNull(container);
+        assertEquals("Psalms", container.readChunk("front", "title").trim());
         assertNotNull(container.toc);
         assertNotNull(container.config);
     }
