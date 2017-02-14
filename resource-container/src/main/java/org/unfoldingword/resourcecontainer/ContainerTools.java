@@ -74,11 +74,11 @@ public class ContainerTools {
 
         String mimeType;
         if(!project.getString("slug").equals("obs") && resource.getString("type").equals("book")) {
-            mimeType = "text/usfm";
+            mimeType = "text/usx";
         } else {
             mimeType = "text/markdown";
         }
-        String chunkExt = mimeType.equals("text/usfm") ? "usfm" : "md";
+        String chunkExt = mimeType.equals("text/usx") ? "usx" : "md";
 
         File containerArchive = new File(directory.getParentFile(), directory.getName() + "." + ResourceContainer.fileExtension);
         if(containerArchive.exists()) throw new Exception("Resource container already exists");
