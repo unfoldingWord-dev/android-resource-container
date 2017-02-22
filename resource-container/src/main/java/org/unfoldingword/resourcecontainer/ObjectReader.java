@@ -140,9 +140,15 @@ public class ObjectReader implements Iterable<ObjectReader> {
         return this.map == null;
     }
 
+    /**
+     * Returns the string value of the reader.
+     * An empty string will be returned if the reader value is null;
+     * @return the string value
+     */
     @Override
     public String toString() {
-        return this.map.toString();
+        if(this.map != null) return this.map.toString();
+        return "";
     }
 
     @Override
