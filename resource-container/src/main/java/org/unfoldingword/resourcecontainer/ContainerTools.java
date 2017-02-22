@@ -1,5 +1,7 @@
 package org.unfoldingword.resourcecontainer;
 
+import android.util.Log;
+
 import com.esotericsoftware.yamlbeans.YamlWriter;
 
 import org.json.JSONArray;
@@ -21,6 +23,8 @@ import java.util.regex.Pattern;
  * These are primarily for testing, internal tools or encapsulating backwards compatibility
  */
 public class ContainerTools {
+
+    private static final String TAG = ContainerTools.class.getName();
 
     /**
      * Reads the resource container info without opening it.
@@ -240,27 +244,14 @@ public class ContainerTools {
                         }
                     }
                 } else if(resource.getString("slug").equals("tq")) {
-                    for(int c = 0; c < json.length(); c ++) {
-                        JSONObject chapter = json.getJSONObject(c);
-                        if(!chapter.has("cq")) continue;
-                        String chapterSlug = normalizeSlug(chapter.getString("id"));
-                        File chapterDir = new File(contentDir, chapterSlug);
-                        chapterDir.mkdirs();
-                        Map<String, String> normalizedChunks = new HashMap();
-                        for(int q = 0; q < chapter.getJSONArray("cq").length(); q ++) {
-                            JSONObject question = chapter.getJSONArray("cq").getJSONObject(q);
-                            String text = "\n\n#" + question.getString("q") + "\n\n" + question.getString("a");
-                            for(int s = 0; s < question.getJSONArray("ref").length(); s ++) {
-                                String[] slugs = question.getJSONArray("ref").getString(s).split("-");
-                                if(slugs.length != 2) continue;
-                                String chunkSlug = normalizeSlug(slugs[1]);
-
-                                String old = normalizedChunks.get(chunkSlug);
-                                normalizedChunks.put(chunkSlug, (old != null ? old : "") + text);
-                            }
-                        }
-                        for(String key:normalizedChunks.keySet()) {
-                            FileUtil.writeStringToFile(new File(chapterDir, key + "." + chunkExt), normalizedChunks.get(key).trim());
+                    ObjectReader reader = convertTQ(data);
+                    List<Object> chapters = reader.keys();
+                    for(Object chapter:chapters) {
+                        List<Object> chunks = reader.get(chapter).keys();
+                        for(Object chunk:chunks) {
+                            File chunkFile = new File(new File(contentDir, (String)chapter), chunk + "." + chunkExt);
+                            chunkFile.getParentFile().mkdirs();
+                            FileUtil.writeStringToFile(chunkFile, reader.get(chapter).get(chunk).toString());
                         }
                     }
                 } else {
@@ -559,7 +550,7 @@ public class ContainerTools {
         ObjectReader reader = new ObjectReader(new JSONArray(tqstring));
         Map<String, Map> normalizedChapters = new HashMap<>();
         for(ObjectReader chapter:reader) {
-            if(chapter.get("cq") == null) continue;
+            if(chapter.get("cq").value() == null) continue;
             try {
                 String chapterId = normalizeSlug((String) chapter.get("id").value());
                 Map<String, String> normalizedChunks = new HashMap<>();
@@ -575,6 +566,7 @@ public class ContainerTools {
                 }
                 normalizedChapters.put(chapterId, normalizedChunks);
             } catch(Exception e) {
+                Log.d(TAG, "tQ parsing failed");
                 e.printStackTrace();
             }
         }
