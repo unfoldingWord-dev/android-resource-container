@@ -397,4 +397,30 @@ public class ContainerUnitTest {
         assertEquals("word", ContainerTools.normalizeSlug("word"));
         assertEquals("00word", ContainerTools.normalizeSlug("00word"));
     }
+
+    @Test
+    public void convertTQ() throws Exception {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL resource = classLoader.getResource("raw_tq.json");
+        File resourceFile = new File(resource.getPath());
+        ObjectReader reader = ContainerTools.convertTQ(FileUtil.readFileToString(resourceFile));
+
+        // confirm chapter count
+        assertEquals(150, reader.size());
+        // confirm chunk count
+        assertEquals(6, reader.get("01").size());
+        // confirm question count
+        String questions = "#Where does the blessed man not walk?\n" +
+                "\n" +
+                "He does not walk in the advice of the wicked.\n" +
+                "\n" +
+                "#Where does the blessed man not stand?\n" +
+                "\n" +
+                "He does not stand in the pathway with sinners.\n" +
+                "\n" +
+                "#Where does the blessed man not sit?\n" +
+                "\n" +
+                "He does not sit in the assembly of mockers.";
+        assertEquals(questions, reader.get("01").get("01").toString());
+    }
 }

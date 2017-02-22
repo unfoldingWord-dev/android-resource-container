@@ -3,6 +3,7 @@ package org.unfoldingword.resourcecontainer;
 import com.esotericsoftware.yamlbeans.YamlWriter;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -248,7 +249,7 @@ public class ContainerTools {
                         Map<String, String> normalizedChunks = new HashMap();
                         for(int q = 0; q < chapter.getJSONArray("cq").length(); q ++) {
                             JSONObject question = chapter.getJSONArray("cq").getJSONObject(q);
-                            String text = "\n\n#" + question.getString("q") + "\n\n" + question.getString("q");
+                            String text = "\n\n#" + question.getString("q") + "\n\n" + question.getString("a");
                             for(int s = 0; s < question.getJSONArray("ref").length(); s ++) {
                                 String[] slugs = question.getJSONArray("ref").getString(s).split("-");
                                 if(slugs.length != 2) continue;
@@ -546,5 +547,37 @@ public class ContainerTools {
      */
     public static String typeToMime(String resourceType) {
         return ResourceContainer.baseMimeType + "+" + resourceType;
+    }
+
+    /**
+     * Converts the old tQ format into the new format.
+     * @param tqstring the string to convert
+     * @return an ObjectReader for ingesting the converted data
+     * @throws JSONException
+     */
+    public static ObjectReader convertTQ(String tqstring) throws JSONException {
+        ObjectReader reader = new ObjectReader(new JSONArray(tqstring));
+        Map<String, Map> normalizedChapters = new HashMap<>();
+        for(ObjectReader chapter:reader) {
+            if(chapter.get("cq") == null) continue;
+            try {
+                String chapterId = normalizeSlug((String) chapter.get("id").value());
+                Map<String, String> normalizedChunks = new HashMap<>();
+                for(ObjectReader question:chapter.get("cq")) {
+                    String text = "\n\n#" + question.get("q") + "\n\n" + question.get("a");
+                    for(ObjectReader ref:question.get("ref")) {
+                        String[] slugs = ref.toString().split("-");
+                        if(slugs.length != 2) continue;
+                        String chunkId = normalizeSlug(slugs[1]);
+                        String old = normalizedChunks.get(chunkId);
+                        normalizedChunks.put(chunkId, (old != null ? old.trim() : "") + text);
+                    }
+                }
+                normalizedChapters.put(chapterId, normalizedChunks);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return new ObjectReader(normalizedChapters);
     }
 }
