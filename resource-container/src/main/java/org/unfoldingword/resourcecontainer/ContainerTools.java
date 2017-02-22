@@ -182,7 +182,7 @@ public class ContainerTools {
                         if(props.has("tw_assignments")) {
                             try {
                                 // TRICKY: we use the un-normalized slug here so we don't break word assignments
-                                JSONArray slugs = props.getJSONObject("tw_assignments").getJSONObject(chapter.getString("number")).getJSONArray(frameSlug);
+                                JSONArray slugs = props.getJSONObject("tw_assignments").getJSONObject(chapterNumber).getJSONArray(frameSlug);
                                 for(int s = 0; s < slugs.length(); s ++) {
                                     words.add(slugs.get(s));
                                 }
