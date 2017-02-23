@@ -186,7 +186,9 @@ public class ContainerTools {
                                 for(int s = 0; s < slugs.length(); s ++) {
                                     words.add(slugs.get(s));
                                 }
-                            } catch (Exception e) {}
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                         if(questions.size() > 0 || notes.size() > 0 || images.size() > 0 || words.size() > 0) {
                             chapterConfig.put(frameSlug, new HashMap());
