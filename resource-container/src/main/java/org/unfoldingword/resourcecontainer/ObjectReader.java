@@ -16,14 +16,14 @@ import java.util.Map;
  * Supported objects: List, Map, JSONObject, JSONArray
  *
  */
-public class ObjectReader implements Iterable<ObjectReader> {
+class ObjectReader implements Iterable<ObjectReader> {
     private final Object map;
 
     /**
      * The map or value
      * @param obj the object to be read.
      */
-    public ObjectReader(Object obj) {
+    ObjectReader(Object obj) {
         this.map = obj;
     }
 
@@ -76,7 +76,7 @@ public class ObjectReader implements Iterable<ObjectReader> {
      *
      * @return a list of keys
      */
-    public List<Object> keys() {
+    List<Object> keys() {
         if(this.map instanceof Map) {
             return new ArrayList<Object>(((Map) this.map).keySet());
         } else if(this.map instanceof Collection) {
@@ -159,7 +159,7 @@ public class ObjectReader implements Iterable<ObjectReader> {
     /**
      * Utility class for iterating over a reader
      */
-    class ObjectIterator implements Iterator<ObjectReader> {
+    private class ObjectIterator implements Iterator<ObjectReader> {
 
         private final ObjectReader reader;
         private final List<Object> keys;
