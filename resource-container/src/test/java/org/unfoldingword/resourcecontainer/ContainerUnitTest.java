@@ -198,6 +198,8 @@ public class ContainerUnitTest {
         assertTrue(container.chunks("01").length > 0);
         assertTrue(container.readChunk("01", "001").isEmpty());
         assertTrue(!container.readChunk("01", "01").isEmpty());
+        assertNotEquals("", container.readChunk("50", "24"));
+        assertEquals("", container.readChunk("50", "00"));
     }
 
     @Test

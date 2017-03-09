@@ -164,10 +164,13 @@ public class ContainerTools {
                         String frameSlug = normalizeSlug(frame.getString("id").split("-")[1].trim());
                         if(frameSlug.equals("00")) {
                             // fix for chunk 00.txt bug
-                            Pattern versePattern = Pattern.compile("/<verse\\s+number=\"(\\d+(-\\d+)?)\"\\s+style=\"v\"\\s*\\/>/");
-                            Matcher match = versePattern.matcher(frame.getString("text"));
-                            if(match.matches()) {
-                                String firstVerseRange = match.group(3);
+                            Pattern versePattern = Pattern.compile("<verse\\s+number=\"(\\d+(-\\d+)?)\"\\s+style=\"v\"\\s*\\/>");
+                            String frameText = frame.getString("text");
+                            // TRICKY: the json encoding escapes double quotes so we need to un-escape them.
+                            frameText = frameText.replace("\\\"", "\"");
+                            Matcher match = versePattern.matcher(frameText);
+                            if(match.find()) {
+                                String firstVerseRange = match.group(1);
                                 // TRICKY: verses can be num-num
                                 frameSlug = normalizeSlug(firstVerseRange.split("-")[0]);
                             }
