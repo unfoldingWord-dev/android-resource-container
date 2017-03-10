@@ -113,7 +113,7 @@ public class ContainerTools {
             File contentDir = new File(directory, "content");
             contentDir.mkdirs();
             Map config = new HashMap();
-            List toc = new ArrayList();
+//            List toc = new ArrayList();
 
             // front matter
             if(!resource.getString("type").equals("help") && !resource.getString("type").equals("dict")) {
@@ -121,10 +121,10 @@ public class ContainerTools {
                 File frontDir = new File(contentDir, "front");
                 frontDir.mkdirs();
                 FileUtil.writeStringToFile(new File(frontDir, "title." + chunkExt), project.getString("name").trim());
-                Map frontToc = new HashMap();
-                frontToc.put("chapter", "front");
-                frontToc.put("chunks", new String[]{"title"});
-                toc.add(frontToc);
+//                Map frontToc = new HashMap();
+//                frontToc.put("chapter", "front");
+//                frontToc.put("chunks", new String[]{"title"});
+//                toc.add(frontToc);
             }
 
             // main content
@@ -142,15 +142,15 @@ public class ContainerTools {
                 for(int c = 0; c < json.getJSONArray("chapters").length(); c ++) {
                     JSONObject chapter = json.getJSONArray("chapters").getJSONObject(c);
                     Map chapterConfig = new HashMap();
-                    Map chapterTOC = new HashMap();
+//                    Map chapterTOC = new HashMap();
                     String chapterNumber = normalizeSlug(chapter.getString("number"));
-                    chapterTOC.put("chapter", chapterNumber);
-                    chapterTOC.put("chunks", new ArrayList());
+//                    chapterTOC.put("chapter", chapterNumber);
+//                    chapterTOC.put("chunks", new ArrayList());
                     File chapterDir = new File(contentDir, chapterNumber);
                     chapterDir.mkdirs();
 
                     // chapter title
-                    ((List)chapterTOC.get("chunks")).add("title");
+//                    ((List)chapterTOC.get("chunks")).add("title");
                     if(chapter.has("title") && !chapter.getString("title").isEmpty()) {
                         FileUtil.writeStringToFile(new File(chapterDir, "title." + chunkExt), chapter.getString("title"));
                     } else {
@@ -209,19 +209,19 @@ public class ContainerTools {
                             ((HashMap)chapterConfig.get(frameSlug)).put("words", words);
                         }
 
-                        ((List)chapterTOC.get("chunks")).add(frameSlug);
+//                        ((List)chapterTOC.get("chunks")).add(frameSlug);
                         FileUtil.writeStringToFile(new File(chapterDir, frameSlug + "." + chunkExt), frame.getString("text"));
                     }
 
                     // chapter reference
                     if(chapter.has("ref") && !chapter.getString("ref").isEmpty()) {
-                        ((List)chapterTOC.get("chunks")).add("reference");
+//                        ((List)chapterTOC.get("chunks")).add("reference");
                         FileUtil.writeStringToFile(new File(chapterDir, "title." + chunkExt), chapter.getString("title"));
                     }
                     if(chapterConfig.size() > 0) {
                         ((Map)config.get("content")).put(chapterNumber, chapterConfig);
                     }
-                    toc.add(chapterTOC);
+//                    toc.add(chapterTOC);
                 }
             } else if(resource.getString("type").equals("help")) {
                 JSONArray json = new JSONArray(data);
@@ -309,7 +309,7 @@ public class ContainerTools {
             } else if(resource.getString("type").equals("man")) {
                 JSONObject json = new JSONObject(data);
 
-                Map tocMap = new HashMap();
+//                Map tocMap = new HashMap();
                 config.put("content", new HashMap());
 
                 for(int a = 0; a < json.getJSONArray("articles").length(); a ++) {
@@ -349,25 +349,25 @@ public class ContainerTools {
                         ((HashMap<String, Object>)config.get("content")).put(slug, articleConfig);
                     }
 
-                    Map articleTOC = new HashMap();
-                    articleTOC.put("chapter", slug);
-                    List chunkTOC = new ArrayList();
-                    chunkTOC.add("title");
-                    chunkTOC.add("sub-title");
-                    chunkTOC.add("01");
-                    articleTOC.put("chunks", chunkTOC);
+//                    Map articleTOC = new HashMap();
+//                    articleTOC.put("chapter", slug);
+//                    List chunkTOC = new ArrayList();
+//                    chunkTOC.add("title");
+//                    chunkTOC.add("sub-title");
+//                    chunkTOC.add("01");
+//                    articleTOC.put("chunks", chunkTOC);
 
-                    tocMap.put(article.getString("id"), articleTOC);
+//                    tocMap.put(article.getString("id"), articleTOC);
                 }
 
                 // build toc from what we see in the api
-                Pattern linkPattern = Pattern.compile("\\[[^\\[\\]]*\\]\\s*\\(([^\\(\\)]*)\\)", Pattern.DOTALL);
-                Matcher match = linkPattern.matcher(json.getString("toc"));
-                while(match.find()) {
-                    String key = match.group(1);
-                    Object val = tocMap.get(key);
-                    if(val != null) toc.add(val);
-                }
+//                Pattern linkPattern = Pattern.compile("\\[[^\\[\\]]*\\]\\s*\\(([^\\(\\)]*)\\)", Pattern.DOTALL);
+//                Matcher match = linkPattern.matcher(json.getString("toc"));
+//                while(match.find()) {
+//                    String key = match.group(1);
+//                    Object val = tocMap.get(key);
+//                    if(val != null) toc.add(val);
+//                }
             } else {
                 throw new Exception("Unsupported resource container type " + resource.getString("type"));
             }
@@ -384,15 +384,15 @@ public class ContainerTools {
             }
 
             // write toc
-            YamlWriter tocWriter = null;
-            try {
-                tocWriter = new YamlWriter(new FileWriter(new File(contentDir, "toc.yml")));
-                tocWriter.write(toc);
-            } catch(Exception e) {
-                throw e;
-            } finally {
-                if(tocWriter != null) tocWriter.close();
-            }
+//            YamlWriter tocWriter = null;
+//            try {
+//                tocWriter = new YamlWriter(new FileWriter(new File(contentDir, "toc.yml")));
+//                tocWriter.write(toc);
+//            } catch(Exception e) {
+//                throw e;
+//            } finally {
+//                if(tocWriter != null) tocWriter.close();
+//            }
 
         } catch (Exception e) {
             FileUtil.deleteQuietly(directory);
