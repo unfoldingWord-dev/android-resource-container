@@ -194,6 +194,7 @@ public class ContainerUnitTest {
         json.put("modified_at", 0);
         ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_gen_ulb"), json);
         assertNotNull(container);
+        assertEquals(0, new ObjectReader(container.toc).size());
         assertTrue(container.chunks("001").length == 0);
         assertTrue(container.chunks("01").length > 0);
         assertTrue(container.readChunk("01", "001").isEmpty());
@@ -236,6 +237,7 @@ public class ContainerUnitTest {
         json.put("modified_at", 0);
         ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "tw_container"), json);
         assertNotNull(container);
+        assertEquals(0, new ObjectReader(container.toc).size());
         assertEquals("bible", container.project.slug);
         assertEquals("text/markdown", container.contentMimeType);
         assertEquals("Facts", ((Map<String, Object>)container.config.get("jewishleaders")).get("def_title"));
@@ -280,9 +282,10 @@ public class ContainerUnitTest {
         json.put("modified_at", 0);
         ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_ta-translate_vol1"), json);
         assertNotNull(container);
-        assertEquals("front", ((Map<String, Object>)((List)container.toc).get(0)).get("chapter"));
-        assertEquals("translate-manual", ((Map<String, Object>)((List)container.toc).get(1)).get("chapter"));
-        assertEquals(67, ((List) container.toc).size());
+        ObjectReader tocReader = new ObjectReader(container.toc);
+        assertEquals("translate-manual", tocReader.get(0).get("chapter").value());
+        assertEquals("translate-terms", tocReader.get(1).get("chapter").value());
+        assertEquals(66, ((List) container.toc).size());
         assertEquals("ta-translate", container.project.slug);
         assertEquals("text/markdown", container.contentMimeType);
         assertNotNull(((Map<String, Object>)container.config.get("content")).get("translate-manual"));
@@ -320,6 +323,7 @@ public class ContainerUnitTest {
         json.put("resource", resource);
         json.put("modified_at", 0);
         ResourceContainer container = ContainerTools.convertResource(data, new File(resourceDir.getRoot(), "en_psa_tn"), json);
+        assertEquals(0, new ObjectReader(container.toc).size());
         assertFalse(container.readChunk("01", "01").isEmpty());
         assertEquals(0, container.chunks("001").length);
         assertFalse(container.readChunk("150", "01").isEmpty());

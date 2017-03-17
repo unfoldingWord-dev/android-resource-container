@@ -110,31 +110,39 @@ public class ResourceContainer {
         // load config
         File configFile = new File(containerDirectory, CONTENT_DIR + "/config.yml");
         Map tempConfig = null;
-        try {
-            YamlReader reader = new YamlReader(new FileReader(configFile));
-            Object object = reader.read();
-            tempConfig = (Map)object;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (YamlException e) {
-            e.printStackTrace();
-        } finally {
-            if(tempConfig == null) tempConfig = new HashMap();
+        if(configFile.exists()) {
+            try {
+                YamlReader reader = new YamlReader(new FileReader(configFile));
+                Object object = reader.read();
+                tempConfig = (Map) object;
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (YamlException e) {
+                e.printStackTrace();
+            } finally {
+                if (tempConfig == null) tempConfig = new HashMap();
+            }
+        } else {
+            tempConfig = new HashMap();
         }
         this.config = tempConfig;
 
         // load toc
         File tocFile = new File(containerDirectory, CONTENT_DIR + "/toc.yml");
         Object tempToc = null;
-        try {
-            YamlReader reader = new YamlReader(new FileReader(tocFile));
-            tempToc = reader.read();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (YamlException e) {
-            e.printStackTrace();
-        } finally {
-            if(tempToc == null) tempToc = new HashMap();
+        if(tocFile.exists()) {
+            try {
+                YamlReader reader = new YamlReader(new FileReader(tocFile));
+                tempToc = reader.read();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (YamlException e) {
+                e.printStackTrace();
+            } finally {
+                if (tempToc == null) tempToc = new HashMap();
+            }
+        } else {
+            tempToc = new HashMap<>();
         }
         this.toc = tempToc;
     }
