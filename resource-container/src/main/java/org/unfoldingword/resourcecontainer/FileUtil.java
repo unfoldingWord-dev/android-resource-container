@@ -154,9 +154,12 @@ class FileUtil {
     public static boolean deleteQuietly(File fileOrDirectory) {
         if(fileOrDirectory != null) {
             if (fileOrDirectory.isDirectory()) {
-                for (File child : fileOrDirectory.listFiles()) {
-                    if(!deleteQuietly(child)) {
-                        return false;
+                File[] files = fileOrDirectory.listFiles();
+                if(files != null) {
+                    for (File child : files) {
+                        if (!deleteQuietly(child)) {
+                            return false;
+                        }
                     }
                 }
             }
