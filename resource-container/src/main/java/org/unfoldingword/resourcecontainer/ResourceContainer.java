@@ -7,6 +7,11 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.resourcecontainer.errors.InvalidRCException;
+import org.unfoldingword.resourcecontainer.errors.MissingRCException;
+import org.unfoldingword.resourcecontainer.errors.OutdatedRCException;
+import org.unfoldingword.resourcecontainer.errors.RCException;
+import org.unfoldingword.resourcecontainer.errors.UnsupportedRCException;
 import org.unfoldingword.tools.jtar.TarInputStream;
 import org.unfoldingword.tools.jtar.TarOutputStream;
 
@@ -155,14 +160,14 @@ public class ResourceContainer {
      * @return
      */
     public static ResourceContainer load(File containerDirectory) throws Exception {
-        if(!containerDirectory.exists()) throw new Exception("The resource container does not exist");
-        if(!containerDirectory.isDirectory()) throw new Exception("Not an open resource container");
+        if(!containerDirectory.exists()) throw new MissingRCException("The resource container does not exist");
+        if(!containerDirectory.isDirectory()) throw new MissingRCException("Not an open resource container");
         File packageFile = new File(containerDirectory, "package.json");
-        if(!packageFile.exists()) throw new Exception("Not a resource container");
+        if(!packageFile.exists()) throw new InvalidRCException("Missing manifest file");
         JSONObject packageJson = new JSONObject(FileUtil.readFileToString(packageFile));
-        if(!packageJson.has("package_version")) throw new Exception("Not a resource container");
-        if(Semver.gt(packageJson.getString("package_version"), ResourceContainer.version)) throw new Exception("Unsupported container version");
-        if(Semver.lt(packageJson.getString("package_version"), ResourceContainer.version)) throw new Exception("Outdated container version");
+        if(!packageJson.has("package_version")) throw new InvalidRCException("Missing package_version");
+        if(Semver.gt(packageJson.getString("package_version"), ResourceContainer.version)) throw new UnsupportedRCException("Unsupported container version");
+        if(Semver.lt(packageJson.getString("package_version"), ResourceContainer.version)) throw new OutdatedRCException("Outdated container version");
 
         return new ResourceContainer(containerDirectory, packageJson);
     }
@@ -193,7 +198,7 @@ public class ResourceContainer {
     public static ResourceContainer open(File containerArchive, File containerDirectory) throws Exception {
         if(containerDirectory.exists()) return load(containerDirectory);
 
-        if(!containerArchive.exists()) throw new Exception("Missing resource container");
+        if(!containerArchive.exists()) throw new MissingRCException("Missing resource container");
         File tempFile = new File(containerArchive + ".tmp.tar");
         FileOutputStream out = null;
         BZip2CompressorInputStream bzIn = null;
@@ -242,7 +247,7 @@ public class ResourceContainer {
      * @throws Exception
      */
     public static File close(File containerDirectory) throws Exception {
-        if(!containerDirectory.exists()) throw new Exception("Missing resource container");
+        if(!containerDirectory.exists()) throw new MissingRCException("Missing resource container");
         // pack
         File tempFile = new File(containerDirectory.getAbsolutePath() + ".tmp.tar");
         TarOutputStream tout = new TarOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)));
