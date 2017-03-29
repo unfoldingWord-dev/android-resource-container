@@ -26,7 +26,7 @@ public class ContainerUnitTest {
         URL resource = classLoader.getResource("valid_single_book_rc");
         File containerDir = new File(resource.getPath());
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         ResourceContainer container = factory.load(containerDir);
 
         assertNotNull(container);
@@ -41,7 +41,7 @@ public class ContainerUnitTest {
         URL resource = classLoader.getResource("valid_multi_book_rc");
         File containerDir = new File(resource.getPath());
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         ResourceContainer container = factory.load(containerDir);
 
         assertNotNull(container);
@@ -59,7 +59,7 @@ public class ContainerUnitTest {
     public void failToLoadMissingRC() throws Exception {
         File containerDir = new File("missing_rc");
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         try {
             ResourceContainer container = factory.load(containerDir);
             assertNull(container);
@@ -72,7 +72,7 @@ public class ContainerUnitTest {
     public void loadMissingRCWhenNotInStrictMode() throws Exception {
         File containerDir = new File("missing_rc");
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         ResourceContainer container = factory.load(containerDir, false);
         assertNotNull(container);
     }
@@ -83,7 +83,7 @@ public class ContainerUnitTest {
         URL resource = classLoader.getResource("valid_single_book_rc");
         File containerDir = new File(resource.getPath());
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         ResourceContainer container = factory.load(containerDir);
 
         assertNotNull(container);
@@ -100,7 +100,7 @@ public class ContainerUnitTest {
         URL resource = classLoader.getResource("valid_single_book_rc");
         File containerDir = new File(new File(resource.getPath()).getParentFile(), "new_rc");
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         HashMap<String, Object> manifest = new HashMap<>();
         HashMap<String, String> language = new HashMap<>();
         language.put("identifier", "en");
@@ -127,12 +127,12 @@ public class ContainerUnitTest {
         URL resource = classLoader.getResource("old_rc");
         File containerDir = new File(resource.getPath());
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         try {
             ResourceContainer container = factory.load(containerDir);
             assertNull(container);
         } catch (Exception e) {
-            assertEquals("Outdated resource container version. Found 0.1 but expected " + ResourceContainerFactory.conformsTo, e.getMessage());
+            assertEquals("Outdated resource container version. Found 0.1 but expected " + Factory.conformsTo, e.getMessage());
         }
     }
 
@@ -142,12 +142,12 @@ public class ContainerUnitTest {
         URL resource = classLoader.getResource("unsupported_rc");
         File containerDir = new File(resource.getPath());
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         try {
             ResourceContainer container = factory.load(containerDir);
             assertNull(container);
         } catch (Exception e) {
-            assertEquals("Unsupported resource container version. Found 9999990.1 but expected " + ResourceContainerFactory.conformsTo, e.getMessage());
+            assertEquals("Unsupported resource container version. Found 9999990.1 but expected " + Factory.conformsTo, e.getMessage());
         }
     }
 
@@ -157,7 +157,7 @@ public class ContainerUnitTest {
         URL resource = classLoader.getResource("valid_multi_book_rc");
         File containerDir = new File(resource.getPath());
 
-        ResourceContainerFactory factory = new ResourceContainerFactory();
+        Factory factory = new Factory();
         ResourceContainer container = factory.load(containerDir);
 
         try {

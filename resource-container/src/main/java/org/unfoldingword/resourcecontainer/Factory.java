@@ -1,11 +1,14 @@
 package org.unfoldingword.resourcecontainer;
 
-import com.esotericsoftware.yamlbeans.YamlConfig;
 import com.esotericsoftware.yamlbeans.YamlWriter;
+
+import org.unfoldingword.resourcecontainer.errors.InvalidRCException;
+import org.unfoldingword.resourcecontainer.errors.OutdatedRCException;
+import org.unfoldingword.resourcecontainer.errors.RCException;
+import org.unfoldingword.resourcecontainer.errors.UnsupportedRCException;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +17,7 @@ import java.util.Map;
 /**
  * Handling the creation and loading of RCs
  */
-public class ResourceContainerFactory {
+public class Factory {
 
     public static final String conformsTo = "0.2";
 
@@ -36,17 +39,24 @@ public class ResourceContainerFactory {
         ResourceContainer rc = new ResourceContainer(dir);
 
         if(strict) {
-            if(rc.manifest.isNull() || rc.conformsTo() == null) throw new Exception("Not a resource container");
-            if(Semver.gt(rc.conformsTo(), conformsTo)) throw new Exception("Unsupported resource container version. Found " + rc.conformsTo() + " but expected " + conformsTo);
-            if(Semver.lt(rc.conformsTo(), conformsTo)) throw new Exception("Outdated resource container version. Found " + rc.conformsTo() + " but expected " + conformsTo);
+            if(rc.manifest.isNull() || rc.conformsTo() == null) throw new InvalidRCException("Not a resource container");
+            if(Semver.gt(rc.conformsTo(), conformsTo)) throw new UnsupportedRCException("Found " + rc.conformsTo() + " but expected " + conformsTo);
+            if(Semver.lt(rc.conformsTo(), conformsTo)) throw new OutdatedRCException("Found " + rc.conformsTo() + " but expected " + conformsTo);
         }
 
         return rc;
     }
 
+    /**
+     * Creates a brand new resource container
+     * @param dir the RC directory
+     * @param manifest the manifest
+     * @return the new RC
+     * @throws Exception
+     */
     public ResourceContainer create(File dir, HashMap<String, Object> manifest) throws Exception {
-        if(dir.exists()) throw new Exception("Resource container already exists");
-        MapReader mr = new MapReader(manifest);
+        if(dir.exists()) throw new RCException("Resource container already exists");
+        ObjectReader reader = new ObjectReader(manifest);
 
         // default values
         Map<String, Object> dublinCore = new HashMap<>();
@@ -75,29 +85,29 @@ public class ResourceContainerFactory {
         List projects = new ArrayList();
 
         // validate user input
-        if(mr.get("dublin_core").get("type").isNull()) {
-            throw new Error("Missing required key: dublin_core.type");
+        if(reader.get("dublin_core").get("type").isNull()) {
+            throw new InvalidRCException("Missing dublin_core.type");
         }
-        if(mr.get("dublin_core").get("format").isNull()) {
-            throw new Error("Missing required key: dublin_core.format");
+        if(reader.get("dublin_core").get("format").isNull()) {
+            throw new InvalidRCException("Missing dublin_core.format");
         }
-        if(mr.get("dublin_core").get("identifier").isNull()) {
-            throw new Error("Missing required key: dublin_core.identifier");
+        if(reader.get("dublin_core").get("identifier").isNull()) {
+            throw new InvalidRCException("Missing dublin_core.identifier");
         }
-        if(mr.get("dublin_core").get("language").isNull()) {
-            throw new Error("Missing required key: dublin_core.language");
+        if(reader.get("dublin_core").get("language").isNull()) {
+            throw new InvalidRCException("Missing dublin_core.language");
         }
-        if(mr.get("dublin_core").get("rights").isNull()) {
-            throw new Error("Missing required key: dublin_core.rights");
+        if(reader.get("dublin_core").get("rights").isNull()) {
+            throw new InvalidRCException("Missing dublin_core.rights");
         }
 
         // merge defaults
-        dublinCore.putAll((Map)mr.get("dublin_core").value());
-        if(!mr.get("checking").isNull()) {
-            checking.putAll((Map) mr.get("checking").value());
+        dublinCore.putAll((Map)reader.get("dublin_core").value());
+        if(!reader.get("checking").isNull()) {
+            checking.putAll((Map) reader.get("checking").value());
         }
-        if(!mr.get("projects").isNull()) {
-            projects.addAll((List) mr.get("projects").value());
+        if(!reader.get("projects").isNull()) {
+            projects.addAll((List) reader.get("projects").value());
         }
 
         HashMap newManifest = new HashMap();

@@ -23,7 +23,7 @@ public class ResourceContainer {
      * Returns the resource container package information.
      * This is the package.json file
      */
-    public MapReader manifest = null;
+    public ObjectReader manifest = null;
 
     /**
      * Instantiates a new resource container object
@@ -37,9 +37,9 @@ public class ResourceContainer {
         File manifestFile = new File(dir, "manifest.yaml");
         if(manifestFile.exists()) {
             YamlReader reader = new YamlReader(new FileReader(manifestFile));
-            this.manifest = new MapReader(reader.read());
+            this.manifest = new ObjectReader(reader.read());
         } else {
-            this.manifest = new MapReader(new HashMap<>());
+            this.manifest = new ObjectReader(new HashMap<>());
         }
     }
 
@@ -47,7 +47,7 @@ public class ResourceContainer {
         Object language = this.manifest.get("dublin_core").get("language");
         if(language == null) return null;
 
-        MapReader reader = new MapReader(language);
+        ObjectReader reader = new ObjectReader(language);
         String slug = (String)reader.get("identifier").value();
         String title = (String)reader.get("title").value();
         String direction = (String)reader.get("direction").value();
@@ -87,7 +87,7 @@ public class ResourceContainer {
         if(identifier != null && !identifier.isEmpty()) {
             // look up project
             for(Object project:(List)this.manifest.get("projects").value()) {
-                MapReader p = new MapReader(project);
+                ObjectReader p = new ObjectReader(project);
                 if(p.get("identifier").value().equals(identifier)) {
                     return p.value();
                 }
@@ -143,11 +143,12 @@ public class ResourceContainer {
         Object p = project(projectIdentifier);
         if(p == null) return new String[]{};
 
-        MapReader pReader = new MapReader(p);
-        String[] chapters = (new File(path, (String)pReader.get("path").value())).list(new FilenameFilter() {
+        ObjectReader pReader = new ObjectReader(p);
+        File contentPath = new File(path, (String)pReader.get("path").value());
+        String[] chapters = contentPath.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                return new File(dir, filename).isDirectory() && !filename.equals("config.yml") && !filename.equals("toc.yml");
+                return new File(dir, filename).isDirectory();
             }
         });
         if(chapters == null) chapters = new String[0];
@@ -175,9 +176,11 @@ public class ResourceContainer {
         Object p = project(projectIdentifier);
         if(p == null) return new String[]{};
 
-        MapReader pReader = new MapReader(p);
+        ObjectReader pReader = new ObjectReader(p);
+        File contentDir = new File(path, (String)pReader.get("path").value());
+        File chapterDir = new File(contentDir, chapterSlug);
         final List<String> chunks = new ArrayList<>();
-        (new File(new File(path, (String)pReader.get("path").value()), chapterSlug)).list(new FilenameFilter() {
+        chapterDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
                 chunks.add(filename.split("\\.")[0]);
@@ -210,8 +213,9 @@ public class ResourceContainer {
         Object p = project(projectIdentifier);
         if(p == null) return "";
 
-        MapReader pReader = new MapReader(p);
-        File chunkFile = new File(new File(new File(path, (String)pReader.get("path").value()), chapterSlug), chunkSlug + "." + chunkExt());
+        ObjectReader pReader = new ObjectReader(p);
+        File contentDir = new File(path, (String)pReader.get("path").value());
+        File chunkFile = new File(new File(contentDir, chapterSlug), chunkSlug + "." + chunkExt());
         if(chunkFile.exists() && chunkFile.isFile()) {
             return FileUtil.readFileToString(chunkFile);
         }
@@ -245,8 +249,9 @@ public class ResourceContainer {
         Object p = project(projectIdentifier);
         if(p == null) return;
 
-        MapReader pReader = new MapReader(p);
-        File chunkFile = new File(new File(new File(path, (String)pReader.get("path").value()), chapterIdentifier), chunkIdentifier + "." + chunkExt());
+        ObjectReader pReader = new ObjectReader(p);
+        File contentDir = new File(path, (String)pReader.get("path").value());
+        File chunkFile = new File(new File(contentDir, chapterIdentifier), chunkIdentifier + "." + chunkExt());
         chunkFile.getParentFile().mkdirs();
         FileUtil.writeStringToFile(chunkFile, content);
     }
