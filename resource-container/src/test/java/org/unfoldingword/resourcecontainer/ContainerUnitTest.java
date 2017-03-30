@@ -6,6 +6,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.unfoldingword.resourcecontainer.errors.OutdatedRCException;
+import org.unfoldingword.resourcecontainer.errors.RCException;
 import org.unfoldingword.resourcecontainer.errors.UnsupportedRCException;
 
 import java.io.File;
@@ -37,6 +38,20 @@ public class ContainerUnitTest {
         assertEquals("Titus", container.readChunk("front", "title").trim());
         assertTrue(container.config().get("content").size() > 0);
         assertTrue(container.toc().size() > 0);
+
+        // write to toc and config
+        container.writeTOC("something");
+        container.writeConfig("something_else");
+
+        assertEquals("something", container.toc().value());
+        assertEquals("something_else", container.config().value());
+
+        // delete toc and config
+        container.writeTOC(null);
+        assertEquals(null, container.toc().value());
+
+        container.writeConfig(null);
+        assertEquals(null, container.config().value());
     }
 
     @Test
@@ -57,6 +72,28 @@ public class ContainerUnitTest {
         assertEquals(4, container.chapters("gen").length);
         assertEquals(8, container.chunks("gen", "01").length);
         assertEquals("Genesis", container.readChunk("gen", "front", "title").trim());
+
+        // write to toc and config
+        container.writeTOC("gen", "something");
+        container.writeConfig("gen", "something_else");
+
+        assertEquals("something", container.toc("gen").value());
+        assertEquals("something_else", container.config("gen").value());
+
+        // delete toc and config
+        container.writeTOC("gen", null);
+        assertEquals(null, container.toc("gen").value());
+
+        container.writeConfig("gen", null);
+        assertEquals(null, container.config("gen").value());
+
+        // test exceptions
+        try {
+            container.writeConfig(null);
+            assertTrue(false);
+        } catch (RCException e) {
+            assertEquals("Multiple projects found. Specify the project identifier.", e.getMessage());
+        }
     }
 
     @Test

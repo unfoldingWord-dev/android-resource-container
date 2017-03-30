@@ -1,11 +1,13 @@
 package org.unfoldingword.resourcecontainer;
 
 import com.esotericsoftware.yamlbeans.YamlReader;
+import com.esotericsoftware.yamlbeans.YamlWriter;
 
 import org.unfoldingword.resourcecontainer.errors.RCException;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -372,5 +374,65 @@ public class ResourceContainer {
         return new ObjectReader(null);
     }
 
+    /**
+     * Creates a toc yaml for the project
+     *
+     * @param content the toc to be written. If empty the toc will be removed
+     */
+    public void writeTOC(String content) throws Exception {
+        writeTOC(null, content);
+    }
 
+    /**
+     * Creates a toc yaml for the project
+     * @param projectIdentifier the project who's toc will be written.
+     * @param content the toc to be written. If empty the toc will be removed
+     * @throws Exception
+     */
+    public void writeTOC(String projectIdentifier, String content) throws Exception {
+        ObjectReader p = project(projectIdentifier);
+        if(p == null) return;
+
+        File contentDir = new File(path, (String)p.get("path").value());
+        File tocFile = new File(contentDir, "toc.yaml");
+        if(content == null || content.isEmpty()) {
+            FileUtil.deleteQuietly(tocFile);
+        } else {
+            tocFile.getParentFile().mkdirs();
+            YamlWriter yamlWriter = new YamlWriter(new FileWriter(tocFile));
+            yamlWriter.write(content);
+            yamlWriter.close();
+        }
+    }
+
+    /**
+     * Creates a config yaml for the project
+     *
+     * @param content the config to be written. If empty the config will be removed
+     */
+    public void writeConfig(String content) throws Exception {
+        writeConfig(null, content);
+    }
+
+    /**
+     * Creates a config yaml for the project
+     * @param projectIdentifier the project who's config will be written.
+     * @param content the config to be written. If empty the config will be removed
+     * @throws Exception
+     */
+    public void writeConfig(String projectIdentifier, String content) throws Exception {
+        ObjectReader p = project(projectIdentifier);
+        if(p == null) return;
+
+        File contentDir = new File(path, (String)p.get("path").value());
+        File configFile = new File(contentDir, "config.yaml");
+        if(content == null || content.isEmpty()) {
+            FileUtil.deleteQuietly(configFile);
+        } else {
+            configFile.getParentFile().mkdirs();
+            YamlWriter yamlWriter = new YamlWriter(new FileWriter(configFile));
+            yamlWriter.write(content);
+            yamlWriter.close();
+        }
+    }
 }
