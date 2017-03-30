@@ -2,12 +2,15 @@ package org.unfoldingword.resourcecontainer;
 
 import com.esotericsoftware.yamlbeans.YamlReader;
 
+import org.unfoldingword.resourcecontainer.errors.RCException;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents an instance of a resource container.
@@ -39,49 +42,59 @@ public class ResourceContainer {
             YamlReader reader = new YamlReader(new FileReader(manifestFile));
             this.manifest = new ObjectReader(reader.read());
         } else {
-            this.manifest = new ObjectReader(new HashMap<>());
+            this.manifest = new ObjectReader(null);
         }
     }
 
-    public Language language() {
-        Object language = this.manifest.get("dublin_core").get("language");
-        if(language == null) return null;
-
-        ObjectReader reader = new ObjectReader(language);
-        String slug = (String)reader.get("identifier").value();
-        String title = (String)reader.get("title").value();
-        String direction = (String)reader.get("direction").value();
-        return new Language(slug, title, direction);
+    /**
+     * Retrieves the language information from the manifest
+     * @return the language information
+     */
+    public ObjectReader language() {
+        return this.manifest.get("dublin_core").get("language");
     }
 
-    public Resource resource () {
+    /**
+     * Retrieves the resource information from the manifest.
+     *
+     * @return the resource information
+     */
+    public ObjectReader resource () {
         String slug = (String)this.manifest.get("dublin_core").get("identifier").value();
         String title = (String)this.manifest.get("dublin_core").get("title").value();
         String type = (String)this.manifest.get("dublin_core").get("type").value();
         String checkingLevel = (String)this.manifest.get("checking").get("checking_level").value();
         String version = (String)this.manifest.get("dublin_core").get("version").value();
-        // TODO: 1/26/17 the translate mode is deprecated
-        return new Resource(slug, title, type, null, checkingLevel, version);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("slug", slug);
+        map.put("title", title);
+        map.put("type", type);
+        map.put("checkingLevel", checkingLevel);
+        map.put("version", version);
+        return new ObjectReader(map);
     }
 
     /**
-     * Retrieves the project from the RC
+     * Retrieves the project's details from the RC.
      *
-     * @return the project
-     * @throws Exception
+     * If this RC contains multiple projects use project(identifier) instead
+     *
+     * @return the project information
+     * @throws RCException if there are multiple projects.
      */
-    public Object project() throws Exception {
+    public Object project() throws RCException {
         return project(null);
     }
 
     /**
-     * Retrieves a project from the RC.
+     * Retrieves a project's details from the RC.
      *
      * @param identifier the project to be retrieved. This can be null if there is only one project
-     * @return the project
-     * @throws Exception
+     * @return the project information
+     * @throws RCException if there are multiple projects and no identifier is given
      */
-    public Object project(String identifier) throws Exception {
+    public ObjectReader project(String identifier) throws RCException {
         if(this.manifest.get("projects").size() == 0) return null;
 
         if(identifier != null && !identifier.isEmpty()) {
@@ -89,13 +102,13 @@ public class ResourceContainer {
             for(Object project:(List)this.manifest.get("projects").value()) {
                 ObjectReader p = new ObjectReader(project);
                 if(p.get("identifier").value().equals(identifier)) {
-                    return p.value();
+                    return p;
                 }
             }
         } else if(this.manifest.get("projects").size() == 1) {
-            return this.manifest.get("projects").get(0).value();
+            return this.manifest.get("projects").get(0);
         } else if(this.manifest.get("projects").size() > 1) {
-            throw new Exception("Multiple projects found. Specify the project identifier.");
+            throw new RCException("Multiple projects found. Specify the project identifier.");
         }
 
         return null;
@@ -140,11 +153,10 @@ public class ResourceContainer {
      * @return an array of chapter identifiers
      */
     public String[] chapters(String projectIdentifier) throws Exception {
-        Object p = project(projectIdentifier);
+        ObjectReader p = project(projectIdentifier);
         if(p == null) return new String[]{};
 
-        ObjectReader pReader = new ObjectReader(p);
-        File contentPath = new File(path, (String)pReader.get("path").value());
+        File contentPath = new File(path, (String)p.get("path").value());
         String[] chapters = contentPath.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
@@ -173,11 +185,10 @@ public class ResourceContainer {
      * @return an array of chunk identifiers
      */
     public String[] chunks(String projectIdentifier, String chapterSlug) throws Exception {
-        Object p = project(projectIdentifier);
+        ObjectReader p = project(projectIdentifier);
         if(p == null) return new String[]{};
 
-        ObjectReader pReader = new ObjectReader(p);
-        File contentDir = new File(path, (String)pReader.get("path").value());
+        File contentDir = new File(path, (String)p.get("path").value());
         File chapterDir = new File(contentDir, chapterSlug);
         final List<String> chunks = new ArrayList<>();
         chapterDir.list(new FilenameFilter() {
@@ -210,11 +221,10 @@ public class ResourceContainer {
      * @return the chunk contents
      */
     public String readChunk(String projectIdentifier, String chapterSlug, String chunkSlug) throws Exception {
-        Object p = project(projectIdentifier);
+        ObjectReader p = project(projectIdentifier);
         if(p == null) return "";
 
-        ObjectReader pReader = new ObjectReader(p);
-        File contentDir = new File(path, (String)pReader.get("path").value());
+        File contentDir = new File(path, (String)p.get("path").value());
         File chunkFile = new File(new File(contentDir, chapterSlug), chunkSlug + "." + chunkExt());
         if(chunkFile.exists() && chunkFile.isFile()) {
             return FileUtil.readFileToString(chunkFile);
@@ -246,14 +256,17 @@ public class ResourceContainer {
      * @throws Exception
      */
     public void writeChunk(String projectIdentifier, String chapterIdentifier, String chunkIdentifier, String content) throws Exception {
-        Object p = project(projectIdentifier);
+        ObjectReader p = project(projectIdentifier);
         if(p == null) return;
 
-        ObjectReader pReader = new ObjectReader(p);
-        File contentDir = new File(path, (String)pReader.get("path").value());
+        File contentDir = new File(path, (String)p.get("path").value());
         File chunkFile = new File(new File(contentDir, chapterIdentifier), chunkIdentifier + "." + chunkExt());
-        chunkFile.getParentFile().mkdirs();
-        FileUtil.writeStringToFile(chunkFile, content);
+        if(content.isEmpty()) {
+            FileUtil.deleteQuietly(chunkFile);
+        } else {
+            chunkFile.getParentFile().mkdirs();
+            FileUtil.writeStringToFile(chunkFile, content);
+        }
     }
 
     /**
@@ -289,4 +302,75 @@ public class ResourceContainer {
     public String type() {
         return (String)this.manifest.get("dublin_core").get("type").value();
     }
+
+    /**
+     * Returns the resource container data configuration.
+     * This is the config.yaml files under the project content directory.
+     *
+     * @return the config information
+     */
+    public ObjectReader config() throws RCException {
+        return config(null);
+    }
+
+    /**
+     * Returns the project configuration
+     * This is the config.yaml files under the project content directory.
+     *
+     * @param projectIdentifier the project who's config will be returned
+     * @return the config information
+     */
+    public ObjectReader config(String projectIdentifier) throws RCException {
+        ObjectReader p = project(projectIdentifier);
+        if(p == null) return null;
+
+        File contentDir = new File(path, (String)p.get("path").value());
+        File configFile = new File(contentDir, "config.yaml");
+        if(configFile.exists()) {
+            try {
+                YamlReader reader = new YamlReader(new FileReader(configFile));
+                return new ObjectReader(reader.read());
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return new ObjectReader(null);
+    }
+
+    /**
+     * Returns the project table of contents
+     * This is the toc.yaml files under the project content directory.
+     *
+     * @return the toc information
+     * @throws RCException
+     */
+    public ObjectReader toc() throws RCException {
+        return toc(null);
+    }
+
+    /**
+     * Returns the project table of contents
+     * This is the toc.yaml files under the project content directory.
+     *
+     * @param projectIdentifier the project who's toc will be returned
+     * @return the toc information
+     */
+    public ObjectReader toc(String projectIdentifier) throws RCException {
+        ObjectReader p = project(projectIdentifier);
+        if(p == null) return null;
+
+        File contentDir = new File(path, (String)p.get("path").value());
+        File tocFile = new File(contentDir, "toc.yaml");
+        if(tocFile.exists()) {
+            try {
+                YamlReader reader = new YamlReader(new FileReader(tocFile));
+                return new ObjectReader(reader.read());
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return new ObjectReader(null);
+    }
+
+
 }

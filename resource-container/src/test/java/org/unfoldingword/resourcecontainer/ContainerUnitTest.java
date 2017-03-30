@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.unfoldingword.resourcecontainer.errors.OutdatedRCException;
+import org.unfoldingword.resourcecontainer.errors.UnsupportedRCException;
 
 import java.io.File;
 import java.net.URL;
@@ -33,6 +35,8 @@ public class ContainerUnitTest {
         assertEquals(4, container.chapters().length);
         assertEquals(8, container.chunks("01").length);
         assertEquals("Titus", container.readChunk("front", "title").trim());
+        assertTrue(container.config().get("content").size() > 0);
+        assertTrue(container.toc().size() > 0);
     }
 
     @Test
@@ -64,7 +68,7 @@ public class ContainerUnitTest {
             ResourceContainer container = factory.load(containerDir);
             assertNull(container);
         } catch (Exception e) {
-            assertEquals("Not a resource container", e.getMessage());
+            assertEquals("Missing manifest.yaml", e.getMessage());
         }
     }
 
@@ -131,8 +135,8 @@ public class ContainerUnitTest {
         try {
             ResourceContainer container = factory.load(containerDir);
             assertNull(container);
-        } catch (Exception e) {
-            assertEquals("Outdated resource container version. Found 0.1 but expected " + Factory.conformsTo, e.getMessage());
+        } catch (OutdatedRCException e) {
+            assertEquals("Found 0.1 but expected " + Factory.conformsTo, e.getMessage());
         }
     }
 
@@ -146,8 +150,8 @@ public class ContainerUnitTest {
         try {
             ResourceContainer container = factory.load(containerDir);
             assertNull(container);
-        } catch (Exception e) {
-            assertEquals("Unsupported resource container version. Found 9999990.1 but expected " + Factory.conformsTo, e.getMessage());
+        } catch (UnsupportedRCException e) {
+            assertEquals("Found 9999990.1 but expected " + Factory.conformsTo, e.getMessage());
         }
     }
 

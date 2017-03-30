@@ -39,9 +39,18 @@ public class Factory {
         ResourceContainer rc = new ResourceContainer(dir);
 
         if(strict) {
-            if(rc.manifest.isNull() || rc.conformsTo() == null) throw new InvalidRCException("Not a resource container");
-            if(Semver.gt(rc.conformsTo(), conformsTo)) throw new UnsupportedRCException("Found " + rc.conformsTo() + " but expected " + conformsTo);
-            if(Semver.lt(rc.conformsTo(), conformsTo)) throw new OutdatedRCException("Found " + rc.conformsTo() + " but expected " + conformsTo);
+            if(rc.manifest.isNull()) {
+                throw new InvalidRCException("Missing manifest.yaml");
+            }
+            if(rc.conformsTo() == null) {
+                throw new InvalidRCException("Missing dublin_core.conformsto");
+            }
+            if(Semver.gt(rc.conformsTo(), conformsTo)) {
+                throw new UnsupportedRCException("Found " + rc.conformsTo() + " but expected " + conformsTo);
+            }
+            if(Semver.lt(rc.conformsTo(), conformsTo)) {
+                throw new OutdatedRCException("Found " + rc.conformsTo() + " but expected " + conformsTo);
+            }
         }
 
         return rc;
