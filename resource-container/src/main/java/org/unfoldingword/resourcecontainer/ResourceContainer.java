@@ -126,6 +126,7 @@ public class ResourceContainer {
             ObjectReader p = new ObjectReader(project);
             list.add((String)p.get("identifier").value());
         }
+        return list;
     }
 
     /**
