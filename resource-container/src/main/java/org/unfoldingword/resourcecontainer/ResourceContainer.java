@@ -117,6 +117,18 @@ public class ResourceContainer {
     }
 
     /**
+     * Returns a list of project identifiers in this rc.
+     * @return a list of project identifiers
+     */
+    public List<String> projectIds() {
+        List<String> list = new ArrayList<>();
+        for(Object project:(List)this.manifest.get("projects").value()) {
+            ObjectReader p = new ObjectReader(project);
+            list.add((String)p.get("identifier").value());
+        }
+    }
+
+    /**
      * Returns the number of projects contained in this RC.
      *
      * @return the project count
