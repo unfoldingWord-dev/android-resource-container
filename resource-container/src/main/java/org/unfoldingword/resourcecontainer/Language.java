@@ -68,6 +68,11 @@ public class Language implements Comparable {
      */
     public static Language fromJSON(JSONObject json) throws JSONException {
         if(json == null) throw new JSONException("Invalid json");
+
+        if(!json.has("slug")) throw new JSONException("Missing language field: slug");
+        if(!json.has("name")) throw new JSONException("Missing language field: name");
+        if(!json.has("direction")) throw new JSONException("Missing language field: direction");
+
         return new Language(json.getString("slug"), json.getString("name"), json.getString("direction"));
     }
 }

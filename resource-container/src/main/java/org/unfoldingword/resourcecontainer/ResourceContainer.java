@@ -100,7 +100,14 @@ public class ResourceContainer {
      * @param containerInfo the resource container info (package.json)
      * @throws JSONException
      */
-    private ResourceContainer(File containerDirectory, JSONObject containerInfo) throws JSONException {
+    private ResourceContainer(File containerDirectory, JSONObject containerInfo) throws Exception {
+        if(!containerInfo.has("modified_at")) throw new InvalidRCException("Missing field: modified_at");
+        if(!containerInfo.has("content_mime_type")) throw new InvalidRCException("Missing field: content_mime_type");
+        if(!containerInfo.has("language")) throw new InvalidRCException("Missing field: language");
+        if(!containerInfo.has("project")) throw new InvalidRCException("Missing field: project");
+        if(!containerInfo.has("resource")) throw new InvalidRCException("Missing field: resource");
+
+
         this.path = containerDirectory;
         this.info = containerInfo;
         this.modifiedAt = info.getInt("modified_at");

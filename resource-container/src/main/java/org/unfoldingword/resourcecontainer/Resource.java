@@ -132,7 +132,17 @@ public class Resource {
      */
     public static Resource fromJSON(JSONObject json) throws JSONException {
         if(json == null) throw new JSONException("Invalid json");
+
+        if(!json.has("status")) throw new JSONException("Missing resource field: status");
+        if(!json.has("slug")) throw new JSONException("Missing resource field: slug");
+        if(!json.has("type")) throw new JSONException("Missing resource field: type");
+
         JSONObject status = json.getJSONObject("status");
+
+        if(!status.has("translate_mode")) throw new JSONException("Missing resource field: status.translate_mode");
+        if(!status.has("checking_level")) throw new JSONException("Missing resource field: status.checking_level");
+        if(!status.has("version")) throw new JSONException("Missing resource field: status.version");
+
         Resource r = new Resource(json.getString("slug"),
                 json.getString("name"),
                 json.getString("type"),
