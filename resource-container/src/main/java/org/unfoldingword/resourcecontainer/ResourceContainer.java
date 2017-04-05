@@ -163,7 +163,7 @@ public class ResourceContainer {
         if(!containerDirectory.exists()) throw new MissingRCException("The resource container does not exist");
         if(!containerDirectory.isDirectory()) throw new MissingRCException("Not an open resource container");
         File packageFile = new File(containerDirectory, "package.json");
-        if(!packageFile.exists()) throw new InvalidRCException("Missing manifest file");
+        if(!packageFile.exists()) throw new InvalidRCException("Missing package.json file");
         JSONObject packageJson = new JSONObject(FileUtil.readFileToString(packageFile));
         if(!packageJson.has("package_version")) throw new InvalidRCException("Missing package_version");
         if(Semver.gt(packageJson.getString("package_version"), ResourceContainer.version)) throw new UnsupportedRCException("Unsupported container version");
