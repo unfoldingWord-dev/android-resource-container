@@ -76,6 +76,10 @@ public class Project {
      * @throws JSONException
      */
     public static Project fromJSON(JSONObject json) throws JSONException {
+        if(!json.has("slug")) throw new JSONException("Missing project field: slug");
+        if(!json.has("name")) throw new JSONException("Missing project field: name");
+        if(!json.has("sort")) throw new JSONException("Missing project field: sort");
+
         if(json == null) throw new JSONException("Invalid json");
         Project p = new Project(json.getString("slug"),
                 json.getString("name"),
